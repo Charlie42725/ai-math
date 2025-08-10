@@ -1,4 +1,15 @@
 import React, { RefObject, FormEvent, ChangeEvent } from "react";
+// 工具函式：解析題目圖片 markdown
+function renderWithImage(text: string) {
+  const imgMatch = text.match(/\[題目圖片\]\(([^)]+)\)/);
+  if (!imgMatch) return <span style={{ whiteSpace: 'pre-line' }}>{text}</span>;
+  const [before, after] = text.split(imgMatch[0]);
+  return <>
+    <span style={{ whiteSpace: 'pre-line' }}>{before}</span>
+    <img src={imgMatch[1]} alt="題目圖片" style={{ maxWidth: 320, margin: '12px 0', borderRadius: 8, border: '1px solid #444' }} />
+    <span style={{ whiteSpace: 'pre-line' }}>{after}</span>
+  </>;
+}
 
 type MessagePart = {
   text?: string;
@@ -33,6 +44,17 @@ const ChatMain: React.FC<ChatMainProps> = ({
   handleImageChange,
   image,
 }) => {
+  // 新增：會考題目練習功能
+  const handlePracticeExam = () => {
+    if (loading) return;
+    setInput("我要練習會考題目");
+    setTimeout(() => {
+      // 模擬送出
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+      handleSend(fakeEvent);
+    }, 0);
+  };
+
   return (
     <main className="flex-1 flex flex-col items-center justify-center px-8 py-12">
       {messages.length === 0 && (
@@ -75,7 +97,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
                   className={`px-4 py-3 rounded-lg max-w-[90%] min-w-[80px] text-left break-words ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-[#28204a] text-[#e0e0e0]"}`}
                   style={{ whiteSpace: 'pre-line', wordBreak: 'break-word' }}
                 >
-                  {part.text}
+                  {part.text ? renderWithImage(part.text) : null}
                 </div>
               )
             )}
@@ -87,6 +109,16 @@ const ChatMain: React.FC<ChatMainProps> = ({
       </div>
       {/* Message input area */}
       <form className="w-full max-w-2xl flex items-center gap-3 mt-auto mb-4" onSubmit={handleSend}>
+        {/* 會考題目練習按鈕 */}
+        <button
+          type="button"
+          className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium transition-colors"
+          style={{ minWidth: 100 }}
+          onClick={handlePracticeExam}
+          disabled={loading}
+        >
+          會考題目練習
+        </button>
         <input
           ref={inputRef}
           className="flex-1 px-4 py-3 rounded bg-[#221a3a] text-white placeholder:text-[#aaa] focus:outline-none"

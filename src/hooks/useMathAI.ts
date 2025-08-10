@@ -1,6 +1,7 @@
 // hooks/useMathAI.ts
 import { detectTopicFromGemini } from "./detectTopicFromGemini";
 import { getTopicDetail } from "./getTopicDetail";
+import examData from "../lib/exam.json";
 
 type TopicDetail = {
   topics: string[];
@@ -8,6 +9,39 @@ type TopicDetail = {
 };
 
 export async function askMathAI(messages: any[], userInput: string) {
+  // 如果是「我要練習會考題目」則直接回覆
+  if (userInput === "我要練習會考題目") {
+    return "沒問題，請問你的年級和想要學習的範圍？（例如：七上 算式運算）";
+  }
+
+  // 嘗試解析年級+單元
+  const gradeUnitMatch = userInput.match(/(七上|七下|八上|八下|九上|九下)[\s,，]*(\S+)/);
+  let filtered: any[] = [];
+  if (gradeUnitMatch) {
+    const grade = gradeUnitMatch[1];
+    const unit = gradeUnitMatch[2];
+    filtered = (examData as any[]).filter(q => q.grade === grade && q.unit.includes(unit));
+  } else {
+    // 模糊搜尋：關鍵字或單元或年級
+    const keyword = userInput.replace(/\s/g, "");
+    filtered = (examData as any[]).filter(q => {
+      return (
+        q.grade === userInput ||
+        q.unit.includes(userInput) ||
+        (q.keywords && q.keywords.some((k: string) => userInput.includes(k) || keyword.includes(k))) ||
+        userInput.includes(q.unit) ||
+        userInput.includes(q.grade)
+      );
+    });
+  }
+  // 若有找到題目就隨機出題
+  if (filtered.length > 0) {
+    const q = filtered[Math.floor(Math.random() * filtered.length)];
+    let optionsText = Object.entries(q.options).map(([k, v]) => `${k}: ${v}`).join("\n");
+    let imageText = q.image && q.image.trim() !== "" ? `\n[題目圖片](${q.image})` : "";
+    return `【${q.grade} ${q.unit}】\n${q.question}${imageText}\n${optionsText}`;
+  }
+
   const topic = await detectTopicFromGemini(userInput);
   const topicDetail = getTopicDetail(topic) as TopicDetail | undefined;
 
