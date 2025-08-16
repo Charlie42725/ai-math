@@ -1,128 +1,98 @@
-import { extractUserMessages } from './extractUserMessages';
-import { saveAnalysisResults } from './saveAnalysisResults';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const MODEL = 'gemini-1.5-flash';
+const MODEL = "gemini-2.0-flash"; // 用快的模型，避免吃光額度
 
-function pickJson(text: string): any | null {
-  if (!text) return null;
-  // 去除 code fence
-  const cleaned = text.replace(/```json|```/g, '').trim();
-  // 嘗試直接 parse
-  try { return JSON.parse(cleaned); } catch {}
-  // 從字串裡擷取第一個 {...}
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  if (match) {
-    try { return JSON.parse(match[0]); } catch {}
-  }
-  return null;
-}
+export async function POST(req: NextRequest) {
+  try {
+    const { user_id, conversation_id, message_index, text } = await req.json();
 
-async function callGemini(prompt: string) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    }
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Gemini error ${res.status}: ${body}`);
-  }
-  const data = await res.json();
-  // 嘗試多個可能路徑
-  const parts =
-    data?.candidates?.[0]?.content?.parts ??
-    data?.candidates?.[0]?.content?.candidate_parts ??
-    [];
-  const aiText = parts?.[0]?.text ?? JSON.stringify(data);
-  return aiText as string;
-}
-
-async function analyzeMessages() {
-  const msgs = await extractUserMessages();
-  if (!msgs.length) {
-    console.log('[analyze] 沒有使用者訊息，結束');
-    return;
-  }
-
-  const rows = [];
-  for (const msg of msgs) {
+    // prompt 設計
     const prompt = `
-你是一個會考數學助教，判斷以下學生訊息是否為一次數學作答。
-只輸出 JSON，格式：
+你是一個數學學習分析助手。
+請根據以下對話，分析學生的數學學習狀況，輸出 JSON 格式：
 {
-  "is_attempt": true|false,
-  "unit": 單元或 null,
-  "grade": 年級或 null,
-  "question_id": 題庫ID或 null,
-  "final_answer": 最終答案或 null,
-  "confidence": 0~1
+  "concepts_used": [...],
+  "unstable_concepts": [...],
+  "thinking_style": "...",
+  "expression": "...",
+  "ai_feedback": [ "...", "..." ]
 }
-學生訊息：
-${msg.text}
-`.trim();
 
-    let aiText = '';
+對話內容：
+${text}
+`;
+
+    // call Gemini
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      }
+    );
+
+    const data = await res.json();
+    console.log("Gemini API response:", data);
+
+    // 拿 AI 回傳文字
+    let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    rawText = rawText.replace(/```json|```/g, ""); // 清掉 code block
+
+    // 嘗試提取 JSON 區塊
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (!match) {
+      return NextResponse.json({ error: "AI 沒有輸出 JSON" }, { status: 500 });
+    }
+
+    let analysis;
     try {
-      aiText = await callGemini(prompt);
-    } catch (e: any) {
-      console.error('[analyze] Gemini 失敗：', e.message);
-      // 如果是 429/配額，用一筆「未分析」結果占位，方便你在 DB 看到紀錄
-      rows.push({
-        user_id: msg.user_id,
-        conversation_id: msg.conversation_id,
-        message_index: msg.message_index,
-        text: msg.text,
-        is_attempt: null,
-        unit: null,
-        grade: null,
-        question_id: null,
-        final_answer: null,
-        confidence: null
-      });
-      continue;
+      analysis = JSON.parse(match[0]);
+    } catch (e) {
+      console.error("JSON parse error:", e);
+      return NextResponse.json({ error: "AI 回傳非 JSON 格式" }, { status: 500 });
     }
 
-    const parsed = pickJson(aiText);
-    if (!parsed) {
-      console.warn('[analyze] 無法解析 JSON：', aiText.slice(0, 200));
-      // 同上，占位
-      rows.push({
-        user_id: msg.user_id,
-        conversation_id: msg.conversation_id,
-        message_index: msg.message_index,
-        text: msg.text,
-        is_attempt: null,
-        unit: null,
-        grade: null,
-        question_id: null,
-        final_answer: null,
-        confidence: null
-      });
-      continue;
+    // 準備資料，符合資料表 schema
+    const row = {
+      user_id,
+      conversation_id,
+      message_index,
+      text,
+      concepts_used: Array.isArray(analysis.concepts_used)
+        ? analysis.concepts_used
+        : [analysis.concepts_used].filter(Boolean),
+      unstable_concepts: Array.isArray(analysis.unstable_concepts)
+        ? analysis.unstable_concepts
+        : [analysis.unstable_concepts].filter(Boolean),
+      thinking_style: analysis.thinking_style || null,
+      expression: analysis.expression || null,
+      ai_feedback: Array.isArray(analysis.ai_feedback)
+        ? analysis.ai_feedback
+        : [analysis.ai_feedback].filter(Boolean),
+      confidence: null, // 暫時不存 logprobs
+      analyzed_at: new Date().toISOString(),
+    };
+
+    // 存進 Supabase
+    const { error } = await supabase.from("analyzed_attempts").insert([row]);
+    if (error) {
+      console.error("DB insert error:", error);
+      return NextResponse.json({ error: "存入資料庫失敗" }, { status: 500 });
     }
 
-    rows.push({
-      user_id: msg.user_id,
-      conversation_id: msg.conversation_id,
-      message_index: msg.message_index,
-      text: msg.text,
-      is_attempt: parsed.is_attempt ?? null,
-      unit: parsed.unit ?? null,
-      grade: parsed.grade ?? null,
-      question_id: parsed.question_id ?? null,
-      final_answer: parsed.final_answer ?? null,
-      confidence: parsed.confidence ?? null
-    });
+    return NextResponse.json({ success: true, analysis: row });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "分析失敗" }, { status: 500 });
   }
-
-  await saveAnalysisResults(rows);
 }
-
-analyzeMessages().catch(err => {
-  console.error(err);
-  process.exit(1);
-});

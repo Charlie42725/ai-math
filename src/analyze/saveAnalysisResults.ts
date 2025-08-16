@@ -10,12 +10,15 @@ type Row = {
   conversation_id: string;
   message_index: number;
   text: string;
-  is_attempt: boolean | null;
-  unit: string | null;
-  grade: string | null;
-  question_id: string | null;
-  final_answer: string | null;
+
+  concepts_used: string[] | null;
+  unstable_concepts: string[] | null;
+  thinking_style: string | null;
+  expression: string | null;
+  ai_feedback: string[] | null;
+
   confidence: number | null;
+  analyzed_at: string; // ISO timestamp
 };
 
 export async function saveAnalysisResults(rows: Row[]) {
@@ -23,12 +26,20 @@ export async function saveAnalysisResults(rows: Row[]) {
     console.log('[save] 沒有可儲存的分析結果');
     return;
   }
-  const { error } = await supabase.from('analyzed_attempts').insert(rows);
+
+  // 統一補上 analyzed_at
+  const rowsWithTime = rows.map(r => ({
+    ...r,
+    analyzed_at: r.analyzed_at || new Date().toISOString(),
+  }));
+
+  const { error } = await supabase.from('analyzed_attempts').insert(rowsWithTime);
+
   if (error) {
     console.error('[save] 失敗:', error.message);
     throw new Error(error.message);
   }
-  console.log(`[save] 已儲存 ${rows.length} 筆分析結果`);
+  console.log(`[save] 已儲存 ${rowsWithTime.length} 筆分析結果`);
 }
 
 if (require.main === module) {

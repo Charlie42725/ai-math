@@ -7,14 +7,20 @@ const supabase = createClient(
 );
 
 export async function GET(req: NextRequest) {
-  const { data, error } = await supabase
+  // 依 user_id 過濾分析資料
+  const { searchParams } = new URL(req.url);
+  const user_id = searchParams.get('user_id');
+  let query = supabase
     .from('analyzed_attempts')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('analyzed_at', { ascending: false })
     .limit(200);
-
-  if (error) {
-    return NextResponse.json({ results: [], error: error.message }, { status: 500 });
+  if (user_id) {
+    query = query.eq('user_id', user_id);
   }
-  return NextResponse.json({ results: data });
+  const { data, error } = await query;
+  if (error) {
+    return NextResponse.json({ data: [], error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ data });
 }
