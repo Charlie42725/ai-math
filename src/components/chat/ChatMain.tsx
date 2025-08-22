@@ -305,11 +305,6 @@ const ChatMain: React.FC<ChatMainProps> = ({
               )}
             </button>
           </div>
-
-          {/* 提示文字 */}
-          <p className="text-slate-400 text-xs text-center">
-            💡 提示：Enter 快速送出，Shift+Enter 換行
-          </p>
         </form>
       </div>
     </div>

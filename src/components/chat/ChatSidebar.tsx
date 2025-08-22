@@ -354,9 +354,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
 
       {/* 底部工具列 */}
       <div className="p-4 border-t border-slate-700/50">
-        <button className="w-full py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 
-                           font-medium transition-all duration-200 border border-red-500/20">
-          🗑️ Clear All History
+        <button 
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 
+                     hover:from-blue-500/20 hover:to-indigo-500/20 text-blue-400 
+                     font-medium transition-all duration-200 border border-blue-500/20 
+                     hover:border-blue-400/30"
+          onClick={() => router.push('/analyze')}
+        >
+          📊 AI分析報表
         </button>
       </div>
     </div>
