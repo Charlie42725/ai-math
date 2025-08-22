@@ -27,127 +27,202 @@ interface ChatSidebarProps {
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
+  // 對話列表去重處理
+  const uniqueChatHistories = React.useMemo(() => {
+    const seen = new Set();
+    return props.chatHistories.filter(chat => {
+      if (seen.has(chat.id)) {
+        return false;
+      }
+      seen.add(chat.id);
+      return true;
+    });
+  }, [props.chatHistories]);
+
   return (
-    <aside className="w-[340px] bg-[#1a1530] p-6 flex flex-col gap-6 border-r border-[#28204a] min-h-screen">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-[#28204a] flex items-center justify-center">
-          <span className="text-2xl">🧮</span>
+    <div className="h-full flex flex-col">
+      {/* 標題區 */}
+      <div className="p-6 border-b border-slate-700/50">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <span className="text-xl">💬</span>
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            Chat History
+          </span>
         </div>
-        <span className="text-xl font-bold tracking-wide">Chat History</span>
+        
+        {/* 搜尋框 */}
+        <input
+          className="w-full px-4 py-2.5 rounded-xl bg-slate-700/50 text-white placeholder:text-slate-400 
+                     focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all duration-200
+                     border border-slate-600/50 hover:border-slate-500/50"
+          placeholder="🔍 Search conversations..."
+        />
       </div>
-      <input
-        className="w-full px-3 py-2 rounded bg-[#221a3a] text-white placeholder:text-[#aaa] focus:outline-none mb-4"
-        placeholder="Search chats..."
-      />
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[#aaa] text-xs">Today</div>
+
+      {/* 對話列表 */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 custom-scrollbar">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-slate-400 text-sm font-medium">Recent Chats</div>
           {props.user && (
             <button
-              className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition"
+              className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 
+                         hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-semibold 
+                         transition-all duration-200 shadow-md hover:shadow-lg"
               onClick={async () => {
-                if (props.user) {
-                  const { data } = await (await import("@/lib/chatHistory")).saveChatHistory(props.user.id, []);
-                  props.setMessages([]);
-                  // 重新 fetch chatHistories 並設 activeChatId 為最新一筆
-                  const { data: allChats } = await props.fetchChatHistories(props.user.id);
-                  if (allChats && allChats.length > 0) {
-                    props.setActiveChatId(allChats[0].id);
-                  }
-                  props.setChatHistories(allChats || []);
-                } else {
+                if (props.user && !props.loading) {
+                  // 清空當前訊息
                   props.setMessages([]);
                   props.setActiveChatId(null);
-                }
-              }}
-            >＋ 新增對話</button>
-          )}
-        </div>
-        {props.user && props.chatHistories.length > 0 ? (
-          props.chatHistories.map((chat) => (
-            <div
-              key={chat.id}
-              className="relative group bg-[#28204a] rounded px-4 py-3 mb-2 flex items-center justify-between cursor-pointer hover:bg-[#32285a]"
-              onClick={async () => {
-                const { data } = await props.fetchChatHistoryById(chat.id);
-                if (data?.messages) {
-                  props.setMessages(data.messages);
-                  props.setActiveChatId(chat.id);
+                  
+                  // 創建新對話
+                  const { data } = await (await import("@/lib/chatHistory")).saveChatHistory(props.user.id, []);
+                  if (data?.[0]?.id) {
+                    props.setActiveChatId(data[0].id);
+                  }
+                  
+                  // 重新獲取歷史記錄，但使用防抖來避免過度更新
+                  const { data: updatedData } = await props.fetchChatHistories(props.user.id);
+                  if (updatedData) {
+                    // 去重處理
+                    const uniqueChats = updatedData.filter((chat, index, arr) => 
+                      arr.findIndex(c => c.id === chat.id) === index
+                    );
+                    props.setChatHistories(uniqueChats);
+                  }
                 }
               }}
             >
+              ✨ New Chat
+            </button>
+          )}
+        </div>
+
+        {/* 對話列表內容 */}
+        {uniqueChatHistories.length > 0 ? (
+          uniqueChatHistories.map((chat) => (
+            <div key={chat.id} className="relative group">
               {props.renameId === chat.id ? (
                 <form
-                  onSubmit={async e => {
+                  onSubmit={async (e: FormEvent<HTMLFormElement>) => {
                     e.preventDefault();
                     await props.renameChatHistory(chat.id, props.renameValue);
                     props.setRenameId(null);
-                    if (props.user) {
-                      props.fetchChatHistories(props.user.id).then(({ data }) => {
-                        if (data) props.setChatHistories(data);
-                      });
-                    }
+                    // 使用防抖更新
+                    setTimeout(async () => {
+                      const { data } = await props.fetchChatHistories(props.user!.id);
+                      if (data) {
+                        const uniqueChats = data.filter((chat, index, arr) => 
+                          arr.findIndex(c => c.id === chat.id) === index
+                        );
+                        props.setChatHistories(uniqueChats);
+                      }
+                    }, 200);
                   }}
-                  className="flex-1 flex items-center gap-2"
+                  className="p-3 rounded-xl bg-slate-700/50 border border-indigo-400/50"
                 >
                   <input
-                    className="flex-1 px-2 py-1 rounded bg-[#18132a] text-white text-sm border border-[#444] focus:outline-none"
                     value={props.renameValue}
-                    onChange={e => props.setRenameValue(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => props.setRenameValue(e.target.value)}
+                    className="w-full bg-transparent text-white focus:outline-none"
                     autoFocus
+                    onBlur={() => props.setRenameId(null)}
                   />
-                  <button type="submit" className="text-xs px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white">儲存</button>
-                  <button type="button" className="text-xs px-2 py-1 rounded bg-[#444] text-white" onClick={() => props.setRenameId(null)}>取消</button>
                 </form>
               ) : (
-                <>
-                  <span className="truncate max-w-[160px]">{chat.title}</span>
-                  <button
-                    className="ml-2 text-lg px-2 py-1 rounded hover:bg-[#32285a]"
-                    onClick={e => {
-                      e.stopPropagation();
-                      props.setMenuOpenId(props.menuOpenId === chat.id ? null : chat.id);
-                      props.setRenameValue(chat.title);
-                    }}
-                  >⋮</button>
-                  {props.menuOpenId === chat.id && (
-                    <div className="absolute right-2 top-10 bg-[#18132a] border border-[#444] rounded shadow-lg z-30 min-w-[120px]">
-                      <button
-                        className="block w-full text-left px-4 py-2 hover:bg-[#28204a] text-white text-sm"
-                        onClick={e => {
-                          e.stopPropagation();
-                          props.setRenameId(chat.id);
-                          props.setMenuOpenId(null);
-                        }}
-                      >重新命名</button>
-                      <button
-                        className="block w-full text-left px-4 py-2 hover:bg-[#28204a] text-red-400 text-sm"
-                        onClick={async e => {
-                          e.stopPropagation();
-                          await props.deleteChatHistory(chat.id);
-                          props.setMenuOpenId(null);
-                          if (props.user) {
-                            props.fetchChatHistories(props.user.id).then(({ data }) => {
-                              if (data) props.setChatHistories(data);
-                            });
-                          }
-                        }}
-                      >刪除</button>
-                    </div>
+                <div
+                  className="p-3 rounded-xl bg-slate-700/30 hover:bg-slate-700/50 cursor-pointer 
+                             transition-all duration-200 border border-transparent hover:border-slate-600/50
+                             group-hover:shadow-md"
+                  onClick={async () => {
+                    const { data } = await props.fetchChatHistoryById(chat.id);
+                    if (data) {
+                      props.setMessages(data.messages);
+                      props.setActiveChatId(chat.id);
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-medium truncate mr-2">
+                      {chat.title || "New Conversation"}
+                    </span>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-slate-600/50 
+                                 transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        props.setMenuOpenId(props.menuOpenId === chat.id ? null : chat.id);
+                      }}
+                    >
+                      <span className="text-slate-400 hover:text-white">⋮</span>
+                    </button>
+                  </div>
+                  
+                  {/* 對話預覽 */}
+                  {chat.messages.length > 0 && (
+                    <p className="text-slate-400 text-sm mt-1 truncate">
+                      {chat.messages[chat.messages.length - 1]?.parts?.[0]?.text || "No messages"}
+                    </p>
                   )}
-                </>
+                </div>
+              )}
+
+              {/* 選單 */}
+              {props.menuOpenId === chat.id && (
+                <div className="absolute right-0 top-full mt-1 bg-slate-800 rounded-lg shadow-xl border border-slate-700/50 z-10 overflow-hidden">
+                  <button
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-slate-700/50 transition-colors"
+                    onClick={() => {
+                      props.setRenameValue(chat.title);
+                      props.setRenameId(chat.id);
+                      props.setMenuOpenId(null);
+                    }}
+                  >
+                    ✏️ Rename
+                  </button>
+                  <button
+                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                    onClick={async () => {
+                      await props.deleteChatHistory(chat.id);
+                      // 使用防抖更新
+                      setTimeout(async () => {
+                        const { data } = await props.fetchChatHistories(props.user!.id);
+                        if (data) {
+                          const uniqueChats = data.filter((chat, index, arr) => 
+                            arr.findIndex(c => c.id === chat.id) === index
+                          );
+                          props.setChatHistories(uniqueChats);
+                        }
+                      }, 200);
+                      props.setMenuOpenId(null);
+                    }}
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
               )}
             </div>
           ))
         ) : (
-          <div className="bg-[#28204a] rounded px-4 py-3 mb-2 flex items-center justify-between">
-            <span>New Chat</span>
-            <span className="text-lg">⋮</span>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
+              <span className="text-2xl">💭</span>
+            </div>
+            <p className="text-slate-400 mb-2">No conversations yet</p>
+            <p className="text-slate-500 text-sm">Start a new chat to begin!</p>
           </div>
         )}
       </div>
-      <button className="w-full mt-auto py-3 rounded bg-[#28204a] hover:bg-[#32285a] text-white font-semibold transition">Delete Chat History</button>
-    </aside>
+
+      {/* 底部工具列 */}
+      <div className="p-4 border-t border-slate-700/50">
+        <button className="w-full py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 
+                           font-medium transition-all duration-200 border border-red-500/20">
+          🗑️ Clear All History
+        </button>
+      </div>
+    </div>
   );
 };
 

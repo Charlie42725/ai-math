@@ -1,4 +1,5 @@
-import React, { RefObject, FormEvent, ChangeEvent } from "react";
+import React, { RefObject, FormEvent, ChangeEvent, useEffect, useRef } from "react";
+
 // 工具函式：解析題目圖片 markdown
 function renderWithImage(text: string) {
   const imgMatch = text.match(/\[題目圖片\]\(([^)]+)\)/);
@@ -6,10 +7,48 @@ function renderWithImage(text: string) {
   const [before, after] = text.split(imgMatch[0]);
   return <>
     <span style={{ whiteSpace: 'pre-line' }}>{before}</span>
-    <img src={imgMatch[1]} alt="題目圖片" style={{ maxWidth: 320, margin: '12px 0', borderRadius: 8, border: '1px solid #444' }} />
+    <img 
+      src={imgMatch[1]} 
+      alt="題目圖片" 
+      className="max-w-80 my-3 rounded-lg border border-slate-600/50 shadow-lg" 
+    />
     <span style={{ whiteSpace: 'pre-line' }}>{after}</span>
   </>;
 }
+
+// 打字機效果組件
+const TypewriterText: React.FC<{ text: string; speed?: number }> = ({ text, speed = 30 }) => {
+  const [displayText, setDisplayText] = React.useState('');
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, speed);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text, speed]);
+
+  useEffect(() => {
+    setDisplayText('');
+    setCurrentIndex(0);
+  }, [text]);
+
+  return <span style={{ whiteSpace: 'pre-line' }}>{displayText}</span>;
+};
+
+// 載入中動畫組件
+const LoadingDots: React.FC = () => {
+  return (
+    <div className="flex space-x-1">
+      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+    </div>
+  );
+};
 
 type MessagePart = {
   text?: string;
@@ -44,114 +83,236 @@ const ChatMain: React.FC<ChatMainProps> = ({
   handleImageChange,
   image,
 }) => {
-  // 新增：會考題目練習功能
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 自動滾到底部
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
+
+  // 快捷鍵處理
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim()) {
+        const fakeEvent = {
+          preventDefault: () => {},
+        } as FormEvent<HTMLFormElement>;
+        handleSend(fakeEvent);
+      }
+    }
+  };
+
+  // 練習會考題目功能
   const handlePracticeExam = () => {
     if (loading) return;
     setInput("我要練習會考題目");
-    setTimeout(() => {
-      // 模擬送出
-      const fakeEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
-      handleSend(fakeEvent);
-    }, 0);
+    const fakeEvent = {
+      preventDefault: () => {},
+    } as FormEvent<HTMLFormElement>;
+    handleSend(fakeEvent);
   };
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center px-8 py-12">
-      {messages.length === 0 && (
-        <div className="w-full max-w-2xl flex flex-col items-center">
-          <h1 className="text-5xl font-bold mb-6 mt-8 text-center">Math AI</h1>
-          <p className="text-lg text-center mb-8 text-[#e0e0e0]">
-            The most powerful math solver AI on the market. Math AI solves everything from basic algebra to advanced calculus, delivering precise answers and step-by-step explanations. Effortlessly generate graphs, plots, and visualizations to deepen your understanding of any problem. Whether you’re a student, educator, or enthusiast, Math AI offers unmatched accuracy and clarity, making math easier to learn, teach, and explore.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center mb-10">
-            {tags.map((tag) => (
+    <div className="flex-1 flex flex-col h-full min-h-0">
+      {/* 訊息顯示區 - 固定高度，可滾動 */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 custom-scrollbar">
+        {messages.length === 0 ? (
+          /* 歡迎畫面 */
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl">
+              <span className="text-4xl">🧮</span>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-4">
+                AI Math Assistant
+              </h1>
+              <p className="text-slate-400 text-lg mb-8 max-w-md">
+                你的專屬數學學習夥伴，準備好開始探索數學的奧秘了嗎？
+              </p>
+            </div>
+            
+            {/* 快速開始按鈕 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
               <button
-                key={tag}
-                className="px-6 py-2 min-w-[100px] whitespace-nowrap text-center rounded-full bg-[#28204a] hover:bg-[#32285a] text-white font-medium text-base transition"
-                disabled={loading}
+                onClick={handlePracticeExam}
+                className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 
+                          border border-indigo-400/30 hover:border-indigo-400/50 
+                          transition-all duration-300 hover:scale-105 group"
               >
-                {tag}
+                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📚</div>
+                <h3 className="font-semibold text-lg mb-2">練習會考題目</h3>
+                <p className="text-slate-400 text-sm">挑戰歷年會考數學題目</p>
               </button>
-            ))}
+              
+              <button
+                onClick={() => setInput("幫我解釋二次函數")}
+                className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 
+                          border border-emerald-400/30 hover:border-emerald-400/50 
+                          transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">💡</div>
+                <h3 className="font-semibold text-lg mb-2">概念學習</h3>
+                <p className="text-slate-400 text-sm">深入理解數學概念</p>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-      {/* Chat messages */}
-      <div className="w-full max-w-2xl flex flex-col gap-4 mb-6">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex flex-col ${msg.role === "user" ? "self-end items-end" : "self-start items-start"}`}
-          >
-            {msg.parts?.map((part, i) =>
-              part.image ? (
-                <img
-                  key={i}
-                  src={part.image}
-                  alt="user upload"
-                  className="mb-1 w-32 h-32 object-cover rounded border border-[#444]"
-                />
-              ) : (
-                <div
-                  key={i}
-                  className={`px-4 py-3 rounded-lg max-w-[90%] min-w-[80px] text-left break-words ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-[#28204a] text-[#e0e0e0]"}`}
-                  style={{ whiteSpace: 'pre-line', wordBreak: 'break-word' }}
-                >
-                  {part.text ? renderWithImage(part.text) : null}
+        ) : (
+          /* 對話訊息 */
+          <>
+            {messages.map((message, index) => (
+              <div 
+                key={index} 
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
+                  message.role === 'user' ? 'animate-slide-in-right' : 'animate-slide-in-left'
+                }`}
+              >
+                <div className={`flex max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
+                  {/* 頭像 */}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg ${
+                    message.role === 'user' 
+                      ? 'bg-gradient-to-br from-indigo-500 to-purple-600' 
+                      : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                  }`}>
+                    <span className="text-lg">
+                      {message.role === 'user' ? '👤' : '🤖'}
+                    </span>
+                  </div>
+
+                  {/* 訊息氣泡 */}
+                  <div className={`rounded-2xl px-4 py-3 shadow-lg ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white'
+                      : 'bg-slate-700/50 text-white border border-slate-600/50'
+                  }`}>
+                    {message.parts.map((part, partIndex) => (
+                      <div key={partIndex}>
+                        {part.image && (
+                          <img 
+                            src={part.image} 
+                            alt="User uploaded" 
+                            className="max-w-64 rounded-lg mb-2 border border-slate-600/50" 
+                          />
+                        )}
+                        {part.text && (
+                          <div className="prose prose-invert max-w-none">
+                            {message.role === 'assistant' && index === messages.length - 1 ? (
+                              renderWithImage(part.text)
+                            ) : (
+                              renderWithImage(part.text)
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )
+              </div>
+            ))}
+
+            {/* 載入中指示器 */}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                    <span className="text-lg">🤖</span>
+                  </div>
+                  <div className="bg-slate-700/50 rounded-2xl px-4 py-3 border border-slate-600/50">
+                    <LoadingDots />
+                  </div>
+                </div>
+              </div>
             )}
-          </div>
-        ))}
-        {loading && (
-          <div className="self-start px-4 py-3 rounded-lg bg-[#28204a] text-[#e0e0e0] opacity-70 max-w-[90%]">AI 回覆中...</div>
+          </>
         )}
+        
+        {/* 自動滾動錨點 */}
+        <div ref={messagesEndRef} />
       </div>
-      {/* Message input area */}
-      <form className="w-full max-w-2xl flex items-center gap-3 mt-auto mb-4" onSubmit={handleSend}>
-        {/* 會考題目練習按鈕 */}
-        <button
-          type="button"
-          className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium transition-colors"
-          style={{ minWidth: 100 }}
-          onClick={handlePracticeExam}
-          disabled={loading}
-        >
-          會考題目練習
-        </button>
-        <input
-          ref={inputRef}
-          className="flex-1 px-4 py-3 rounded bg-[#221a3a] text-white placeholder:text-[#aaa] focus:outline-none"
-          placeholder="Message Math AI..."
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          disabled={loading}
-          autoFocus
-        />
-        <label className="cursor-pointer px-3 py-2 bg-[#28204a] rounded-lg hover:bg-[#32285a] text-white transition-colors">
-          上傳圖片
-          <input
-            type="file"
-            accept="image/png,image/jpeg"
-            className="hidden"
-            onChange={handleImageChange}
-            disabled={loading}
-          />
-        </label>
-        {image && (
-          <img src={image} alt="preview" className="w-12 h-12 object-cover rounded ml-2 border border-[#444]" />
-        )}
-        <button
-          type="submit"
-          className="p-3 rounded-full bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-60"
-          disabled={loading || (!input.trim() && !image)}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-      </form>
-    </main>
+
+      {/* 底部輸入區 - 固定位置 */}
+      <div className="border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-6">
+        <form onSubmit={handleSend} className="space-y-4">
+          {/* 圖片預覽 */}
+          {image && (
+            <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-xl border border-slate-600/50">
+              <img src={image} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
+              <span className="text-slate-300 text-sm">圖片已準備上傳</span>
+              <button
+                type="button"
+                onClick={() => {/* 清除圖片邏輯 */}}
+                className="ml-auto text-red-400 hover:text-red-300"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* 輸入框區域 */}
+          <div className="flex gap-3 items-end">
+            {/* 圖片上傳按鈕 */}
+            <label className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 cursor-pointer transition-colors border border-slate-600/50 hover:border-slate-500/50">
+              <span className="text-lg">📎</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+
+            {/* 文字輸入框 */}
+            <div className="flex-1 relative">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="輸入你的數學問題... (Enter 送出，Shift+Enter 換行)"
+                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 text-white placeholder:text-slate-400 
+                          focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all duration-200
+                          border border-slate-600/50 hover:border-slate-500/50 resize-none min-h-[48px] max-h-32"
+                rows={1}
+                style={{ 
+                  height: 'auto',
+                  minHeight: '48px'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+                }}
+              />
+            </div>
+
+            {/* 送出按鈕 */}
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 
+                        hover:from-indigo-600 hover:to-purple-700 text-white font-semibold
+                        transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 
+                        disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? <LoadingDots /> : (
+                <>
+                  <span>送出</span>
+                  <span className="text-lg">🚀</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 提示文字 */}
+          <p className="text-slate-400 text-xs text-center">
+            💡 提示：Enter 快速送出，Shift+Enter 換行
+          </p>
+        </form>
+      </div>
+    </div>
   );
 };
 
