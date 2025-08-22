@@ -1,8 +1,20 @@
 "use client";
 
 export default function FeedbackList({ data }: { data: any[] }) {
-  // 扁平化所有建議
-  const feedbacks = data.flatMap(row => row.ai_feedback?.map((f: string) => ({ id: row.id, text: f })) ?? []);
+  // 扁平化所有建議並去重
+  const allFeedbacks = data.flatMap(row => 
+    row.ai_feedback?.map((f: string) => ({ id: row.id, text: f })) ?? []
+  );
+  
+  // 去重複的建議（相似內容只保留一個）
+  const uniqueFeedbacks = allFeedbacks.filter((feedback, index, arr) => 
+    index === arr.findIndex(f => 
+      f.text.slice(0, 20) === feedback.text.slice(0, 20) // 前20字相同視為重複
+    )
+  );
+  
+  // 只顯示前6個最重要的建議
+  const feedbacks = uniqueFeedbacks.slice(0, 6);
   return (
     <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl shadow-lg p-6">
       <h2 className="text-2xl font-bold mb-4 text-green-700 flex items-center gap-2">
@@ -13,7 +25,7 @@ export default function FeedbackList({ data }: { data: any[] }) {
         <div className="text-gray-400 text-center py-12">暫無建議</div>
       ) : (
         <ul className="list-disc pl-6 space-y-2 animate-fadein">
-          {feedbacks.slice(0, 8).map((f, idx) => (
+          {feedbacks.map((f, idx) => (
             <li key={f.id + idx} className="text-gray-700 leading-relaxed text-base">
               <span className="inline-block align-middle mr-2 text-green-400">💡</span>{f.text}
             </li>

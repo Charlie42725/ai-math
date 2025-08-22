@@ -54,7 +54,38 @@ export async function POST(req: NextRequest) {
     } else {
       context = `學生：${msg.text}`;
     }
-    const prompt = `你是一個國中數學學習分析 AI 助教，請根據下列對話內容，分析學生的學習狀況，並只輸出以下 JSON 格式：\n{\n  "concepts_used": ["..."],\n  "unstable_concepts": ["..."],\n  "thinking_style": "...",\n  "expression": "...",\n  "ai_feedback": ["..."],\n  "confidence": 0~1\n}\n請不要輸出多餘欄位。\n\n對話內容：\n${context}\n`;
+    const prompt = `你是一個國中數學學習分析 AI 助教，請根據下列對話內容，分析學生的學習狀況。
+
+請輸出以下 JSON 格式，重點是要歸納出學生主要使用的數學領域，不要過度細分：
+
+{
+  "concepts_used": ["生活中的立體圖形"],
+  "unstable_concepts": ["生活中的立體圖形"],
+  "thinking_style": "視覺型",
+  "expression": "清楚",
+  "ai_feedback": ["建議多練習立體圖形的展開與組合"],
+  "confidence": 0.8
+}
+
+分析原則：
+1. 每個對話主題只歸納為1-2個主要概念，不要細分
+2. 如果是同一類型題目，統一歸類到同一個單元
+3. 優先歸納到較大的概念單元，而非細項
+
+國中數學主要單元（請優先使用這些）：
+- 整數的運算、分數的運算
+- 一元一次方程式、二元一次聯立方程式、一元二次方程式
+- 乘法公式與多項式、因式分解
+- 平方根與畢氏定理
+- 線型函數、二次函數
+- 三角形的基本性質、平行與四邊形、相似形、圓形
+- 生活中的幾何、生活中的立體圖形
+- 統計、統計與機率
+- 比與比例式、一元一次不等式
+
+對話內容：
+${context}
+`;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const res = await fetch(`${baseUrl}/api/gemini`, {
       method: "POST",
