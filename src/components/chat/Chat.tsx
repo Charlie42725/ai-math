@@ -6,7 +6,12 @@ import ChatSidebar from "./ChatSidebar";
 import ChatTopbar from "./ChatTopbar";
 import ChatMain from "./ChatMain";
 import { askMathAI } from "@/hooks/useMathAI";
-export default function Chat() {
+
+interface ChatProps {
+  initialChatId?: string;
+}
+
+export default function Chat({ initialChatId }: ChatProps = {}) {
 const tags = [
   "Chat with AI Characters!",
   "AI Text Generator",
@@ -68,10 +73,22 @@ type ChatHistory = {
   useEffect(() => {
     if (user) {
       refreshChatHistories(user.id);
+      
+      // 如果有 initialChatId，載入該對話
+      if (initialChatId) {
+        const loadInitialChat = async () => {
+          const { data } = await fetchChatHistoryById(initialChatId);
+          if (data) {
+            setMessages(data.messages || []);
+            setActiveChatId(initialChatId);
+          }
+        };
+        loadInitialChat();
+      }
     } else {
       setChatHistories([]);
     }
-  }, [user]);
+  }, [user, initialChatId]);
 
   // 清除定時器
   useEffect(() => {

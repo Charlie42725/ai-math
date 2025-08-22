@@ -28,7 +28,7 @@ export async function deleteChatHistory(id: string) {
 export async function fetchChatHistoryById(id: string) {
   const { data, error } = await supabase
     .from("chat_histories")
-    .select("messages")
+    .select("id, title, messages, created_at")
     .eq("id", id)
     .single();
   return { data, error };
@@ -58,4 +58,48 @@ export async function fetchChatHistories(userId: string) {
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   return { data, error };
+}
+
+// 搜尋對話功能
+export async function searchChatHistories(userId: string, query: string) {
+  if (!query.trim()) {
+    // 若 query 為空，返回全部對話
+    return fetchChatHistories(userId);
+  }
+  
+  const { data, error } = await supabase
+    .from("chat_histories")
+    .select("id, title, created_at")
+    .eq("user_id", userId)
+    .ilike("title", `%${query}%`)
+    .order("created_at", { ascending: false });
+  return { data, error };
+}
+
+// 對話分組工具函數
+export function groupChatsByDate(chats: any[]) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
+  const groups = {
+    today: [] as any[],
+    yesterday: [] as any[],
+    earlier: [] as any[]
+  };
+
+  chats.forEach(chat => {
+    const chatDate = new Date(chat.created_at);
+    const chatDay = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate());
+
+    if (chatDay.getTime() === today.getTime()) {
+      groups.today.push(chat);
+    } else if (chatDay.getTime() === yesterday.getTime()) {
+      groups.yesterday.push(chat);
+    } else {
+      groups.earlier.push(chat);
+    }
+  });
+
+  return groups;
 }
