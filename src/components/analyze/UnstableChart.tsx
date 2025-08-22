@@ -36,13 +36,24 @@ export default function UnstableChart({ data }: { data: any[] }) {
 
   const COLORS = ["#f59e0b", "#ef4444", "#10b981", "#6366f1", "#a21caf", "#0ea5e9"];
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold mb-4 text-orange-700 flex items-center gap-2">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-slate-700/50">
+      <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center">
+          <span className="text-sm">⚠️</span>
+        </div>
         <span>需加強的概念</span>
-        <span className="text-xs bg-orange-100 text-orange-600 rounded px-2 py-0.5">TOP {Math.min(chartData.length, 4)}</span>
+        <span className="text-xs bg-orange-500/20 text-orange-300 rounded-lg px-3 py-1 border border-orange-500/30">
+          TOP {Math.min(chartData.length, 4)}
+        </span>
       </h2>
       {chartData.length === 0 ? (
-        <div className="text-gray-400 text-center py-12">暫無數據</div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
+            <span className="text-2xl">📈</span>
+          </div>
+          <p className="text-slate-400 mb-2">暫無數據</p>
+          <p className="text-slate-500 text-sm">開始對話後即可看到分析結果</p>
+        </div>
       ) : (
         <ResponsiveContainer width="100%" height={320}>
           <PieChart>
@@ -52,14 +63,26 @@ export default function UnstableChart({ data }: { data: any[] }) {
               nameKey="name"
               outerRadius={110}
               label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+              labelLine={false}
               isAnimationActive={true}
             >
               {chartData.map((_, idx) => (
                 <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip wrapperClassName="!rounded-xl !shadow-lg" />
-            <Legend />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#1e293b', 
+                border: '1px solid #475569', 
+                borderRadius: '12px',
+                color: '#f1f5f9'
+              }}
+              wrapperClassName="!rounded-xl !shadow-lg"
+            />
+            <Legend 
+              wrapperStyle={{ color: '#cbd5e1' }}
+              iconType="circle"
+            />
           </PieChart>
         </ResponsiveContainer>
       )}

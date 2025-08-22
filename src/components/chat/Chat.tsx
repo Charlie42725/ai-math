@@ -180,7 +180,7 @@ type ChatHistory = {
       ]);
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
+      // inputRef.current?.focus(); // 移除 focus 調用，因為改用 textarea
     }
   };
 

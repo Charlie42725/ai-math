@@ -16,21 +16,41 @@ export default function FeedbackList({ data }: { data: any[] }) {
   // 只顯示前6個最重要的建議
   const feedbacks = uniqueFeedbacks.slice(0, 6);
   return (
-    <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold mb-4 text-green-700 flex items-center gap-2">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-slate-700/50">
+      <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
+          <span className="text-sm">💡</span>
+        </div>
         <span>AI 的學習建議</span>
-        <span className="text-xs bg-green-100 text-green-600 rounded px-2 py-0.5">{feedbacks.length} 則</span>
+        <span className="text-xs bg-green-500/20 text-green-300 rounded-lg px-3 py-1 border border-green-500/30">
+          {feedbacks.length} 則
+        </span>
       </h2>
       {feedbacks.length === 0 ? (
-        <div className="text-gray-400 text-center py-12">暫無建議</div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
+            <span className="text-2xl">💡</span>
+          </div>
+          <p className="text-slate-400 mb-2">暫無建議</p>
+          <p className="text-slate-500 text-sm">開始對話後即可看到學習建議</p>
+        </div>
       ) : (
-        <ul className="list-disc pl-6 space-y-2 animate-fadein">
+        <div className="space-y-4">
           {feedbacks.map((f, idx) => (
-            <li key={f.id + idx} className="text-gray-700 leading-relaxed text-base">
-              <span className="inline-block align-middle mr-2 text-green-400">💡</span>{f.text}
-            </li>
+            <div 
+              key={f.id + idx} 
+              className="p-4 rounded-xl bg-slate-700/30 border border-slate-600/50 
+                         hover:bg-slate-700/50 transition-all duration-200"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <span className="text-green-400 text-sm">💡</span>
+                </div>
+                <p className="text-slate-200 leading-relaxed">{f.text}</p>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

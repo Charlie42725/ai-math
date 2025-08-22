@@ -90,3 +90,70 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.7);
 }
+
+/* 隱藏滾動條的上下箭頭按鈕 */
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  display: none;
+}
+
+/* 全域隱藏所有滾動條箭頭 */
+*::-webkit-scrollbar-button {
+  display: none;
+}
+
+*::-webkit-scrollbar-corner {
+  display: none;
+}
+
+/* 隱藏 textarea 的調整大小控制項 */
+textarea {
+  resize: none !important;
+}
+
+textarea::-webkit-resizer {
+  display: none !important;
+}
+
+/* 隱藏所有可能的調整大小控制項 */
+*::-webkit-resizer {
+  display: none !important;
+}
+
+/* ChatGPT 風格的輸入框滾動條 */
+.custom-input-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-input-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-input-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-input-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+  background-clip: content-box;
+}
+
+.custom-input-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+.custom-input-scrollbar::-webkit-scrollbar-corner {
+  display: none;
+}
+
+/* Firefox 滾動條樣式 */
+.custom-input-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}

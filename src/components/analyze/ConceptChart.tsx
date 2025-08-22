@@ -35,30 +35,55 @@ export default function ConceptChart({ data }: { data: any[] }) {
     .map(([name, value]) => ({ name, value }));
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold mb-4 text-indigo-700 flex items-center gap-2">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-slate-700/50">
+      <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+          <span className="text-sm">📊</span>
+        </div>
         <span>常用數學概念</span>
-        <span className="text-xs bg-indigo-100 text-indigo-600 rounded px-2 py-0.5">TOP {Math.min(chartData.length, 5)}</span>
+        <span className="text-xs bg-indigo-500/20 text-indigo-300 rounded-lg px-3 py-1 border border-indigo-500/30">
+          TOP {Math.min(chartData.length, 5)}
+        </span>
       </h2>
       {chartData.length === 0 ? (
-        <div className="text-gray-400 text-center py-12">暫無數據</div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
+            <span className="text-2xl">📊</span>
+          </div>
+          <p className="text-slate-400 mb-2">暫無數據</p>
+          <p className="text-slate-500 text-sm">開始對話後即可看到分析結果</p>
+        </div>
       ) : (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData} margin={{ top: 16, right: 24, left: 0, bottom: 60 }}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <defs>
+              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#475569" opacity={0.3} />
             <XAxis 
               dataKey="name" 
               fontSize={12} 
-              tick={{ fill: '#6366f1' }} 
+              tick={{ fill: '#cbd5e1' }} 
               angle={-45}
               textAnchor="end"
               height={80}
               interval={0}
             />
-            <YAxis allowDecimals={false} fontSize={14} tick={{ fill: '#6366f1' }} />
-            <Tooltip wrapperClassName="!rounded-xl !shadow-lg" />
-            <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]}>
-              <LabelList dataKey="value" position="top" fill="#4f46e5" fontWeight={700} />
+            <YAxis allowDecimals={false} fontSize={14} tick={{ fill: '#cbd5e1' }} />
+            <Tooltip 
+              wrapperClassName="!rounded-xl !shadow-lg !bg-slate-800 !border-slate-600" 
+              contentStyle={{ 
+                backgroundColor: '#1e293b', 
+                border: '1px solid #475569', 
+                borderRadius: '12px',
+                color: '#f1f5f9'
+              }}
+            />
+            <Bar dataKey="value" fill="url(#barGradient)" radius={[8, 8, 0, 0]}>
+              <LabelList dataKey="value" position="top" fill="#a5b4fc" fontWeight={700} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

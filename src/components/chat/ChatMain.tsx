@@ -1,18 +1,37 @@
 import React, { RefObject, FormEvent, ChangeEvent, useEffect, useRef } from "react";
 
-// 工具函式：解析題目圖片 markdown
+// 工具函式：解析題目圖片 markdown 和文字格式
 function renderWithImage(text: string) {
   const imgMatch = text.match(/\[題目圖片\]\(([^)]+)\)/);
-  if (!imgMatch) return <span style={{ whiteSpace: 'pre-line' }}>{text}</span>;
+  
+  // 處理粗體文字的函數
+  const renderFormattedText = (str: string) => {
+    // 分割文字，處理 **粗體** 格式
+    const parts = str.split(/(\*\*[^*]+\*\*)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // 移除 ** 標記並套用粗體樣式
+        const boldText = part.slice(2, -2);
+        return <strong key={index} className="font-bold text-indigo-200">{boldText}</strong>;
+      }
+      return <span key={index} style={{ whiteSpace: 'pre-line' }}>{part}</span>;
+    });
+  };
+  
+  if (!imgMatch) {
+    return <>{renderFormattedText(text)}</>;
+  }
+  
   const [before, after] = text.split(imgMatch[0]);
   return <>
-    <span style={{ whiteSpace: 'pre-line' }}>{before}</span>
+    {renderFormattedText(before)}
     <img 
       src={imgMatch[1]} 
       alt="題目圖片" 
       className="max-w-80 my-3 rounded-lg border border-slate-600/50 shadow-lg" 
     />
-    <span style={{ whiteSpace: 'pre-line' }}>{after}</span>
+    {renderFormattedText(after)}
   </>;
 }
 
@@ -274,16 +293,27 @@ const ChatMain: React.FC<ChatMainProps> = ({
                 placeholder="輸入你的數學問題... (Enter 送出，Shift+Enter 換行)"
                 className="w-full px-4 py-3 rounded-xl bg-slate-700/50 text-white placeholder:text-slate-400 
                           focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all duration-200
-                          border border-slate-600/50 hover:border-slate-500/50 resize-none min-h-[48px] max-h-32"
+                          border border-slate-600/50 hover:border-slate-500/50 resize-none 
+                          min-h-[48px] max-h-[200px] overflow-y-auto custom-input-scrollbar"
                 rows={1}
                 style={{ 
-                  height: 'auto',
-                  minHeight: '48px'
+                  minHeight: '48px',
+                  maxHeight: '200px',
+                  resize: 'none',
+                  lineHeight: '1.5'
                 }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = 'auto';
-                  target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+                  const newHeight = Math.min(target.scrollHeight, 200);
+                  target.style.height = newHeight + 'px';
+                  
+                  // 如果內容超過最大高度，顯示滾動條
+                  if (target.scrollHeight > 200) {
+                    target.style.overflowY = 'auto';
+                  } else {
+                    target.style.overflowY = 'hidden';
+                  }
                 }}
               />
             </div>

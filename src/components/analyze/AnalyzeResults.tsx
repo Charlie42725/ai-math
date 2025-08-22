@@ -59,21 +59,59 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="space-y-10">
-      <div className="flex items-center gap-4 mb-2">
-        <button
-          className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-bold shadow hover:bg-indigo-700 transition disabled:opacity-50"
-          onClick={handleAnalyze}
-          disabled={analyzing}
-        >
-          {analyzing ? "分析中..." : "開始分析"}
-        </button>
-        {loading && <span className="text-gray-500">載入分析結果中...</span>}
-        {error && <span className="text-red-500">{error}</span>}
+    <div className="h-full flex flex-col">
+      {/* 頂部標題區 */}
+      <div className="p-6 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <span className="text-xl">📊</span>
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            AI分析報表
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <button
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 
+                       hover:from-indigo-600 hover:to-purple-700 text-white font-semibold 
+                       transition-all duration-200 shadow-md hover:shadow-lg 
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleAnalyze}
+            disabled={analyzing || loading}
+          >
+            {analyzing ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                分析中...
+              </div>
+            ) : (
+              "🚀 開始分析"
+            )}
+          </button>
+          
+          {loading && (
+            <div className="flex items-center gap-2 text-slate-400">
+              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+              載入分析結果中...
+            </div>
+          )}
+          
+          {error && (
+            <div className="flex items-center gap-2 text-red-400">
+              <span>⚠️</span>
+              {error}
+            </div>
+          )}
+        </div>
       </div>
-      <ConceptChart data={data} />
-      <UnstableChart data={data} />
-      <FeedbackList data={data} />
+
+      {/* 內容區域 */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <ConceptChart data={data} />
+        <UnstableChart data={data} />
+        <FeedbackList data={data} />
+      </div>
     </div>
   );
 }
