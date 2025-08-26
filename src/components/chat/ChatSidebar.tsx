@@ -1,4 +1,4 @@
-import React, { FormEvent, ChangeEvent, useState, useEffect } from "react";
+import React, { FormEvent, ChangeEvent, useState, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchChatHistories, groupChatsByDate } from "@/lib/chatHistory";
 import { useRouter } from "next/navigation";
@@ -38,9 +38,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   const [searchResults, setSearchResults] = useState<ChatHistory[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  
+  // 新增對話狀態 - 防止重複點擊
+  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
+  const createChatTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // 使用 debounce 處理搜尋
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // 清理函數
+  useEffect(() => {
+    return () => {
+      if (createChatTimeout.current) {
+        clearTimeout(createChatTimeout.current);
+      }
+    };
+  }, []);
 
   // 當 debounced query 改變時執行搜尋
   useEffect(() => {
@@ -77,23 +90,41 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
     setSearchResults([]);
   };
 
-  // 對話列表去重處理
+  // 對話列表去重處理 - 更強化的去重邏輯
   const uniqueChatHistories = React.useMemo(() => {
-    const seen = new Set();
-    return props.chatHistories.filter(chat => {
-      if (seen.has(chat.id)) {
-        return false;
+    const seen = new Map();
+    const filtered = [];
+    
+    for (const chat of props.chatHistories) {
+      if (!seen.has(chat.id)) {
+        seen.set(chat.id, true);
+        filtered.push(chat);
       }
-      seen.add(chat.id);
-      return true;
-    });
+    }
+    
+    return filtered;
   }, [props.chatHistories]);
 
+  // 搜尋結果也要去重
+  const uniqueSearchResults = React.useMemo(() => {
+    const seen = new Map();
+    const filtered = [];
+    
+    for (const chat of searchResults) {
+      if (!seen.has(chat.id)) {
+        seen.set(chat.id, true);
+        filtered.push(chat);
+      }
+    }
+    
+    return filtered;
+  }, [searchResults]);
+
   // 決定要顯示的對話列表（搜尋結果 or 一般列表）
-  const displayChats = showSearchResults ? searchResults : uniqueChatHistories;
+  const displayChats = showSearchResults ? uniqueSearchResults : uniqueChatHistories;
   
   // 對搜尋結果進行分組
-  const groupedChats = showSearchResults ? groupChatsByDate(searchResults) : groupChatsByDate(uniqueChatHistories);
+  const groupedChats = showSearchResults ? groupChatsByDate(uniqueSearchResults) : groupChatsByDate(uniqueChatHistories);
 
   // 渲染對話項目
   const renderChatItem = (chat: ChatHistory) => (
@@ -104,14 +135,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             e.preventDefault();
             await props.renameChatHistory(chat.id, props.renameValue);
             props.setRenameId(null);
-            // 使用防抖更新
+            // 使用防抖更新 - 避免重複調用
             setTimeout(async () => {
-              const { data } = await props.fetchChatHistories(props.user!.id);
-              if (data) {
-                const uniqueChats = data.filter((chat, index, arr) => 
-                  arr.findIndex(c => c.id === chat.id) === index
-                );
-                props.setChatHistories(uniqueChats);
+              if (props.user) {
+                const { data } = await props.fetchChatHistories(props.user.id);
+                if (data) {
+                  // 更強化的去重處理
+                  const chatMap = new Map();
+                  for (const chatItem of data) {
+                    if (!chatMap.has(chatItem.id)) {
+                      chatMap.set(chatItem.id, chatItem);
+                    }
+                  }
+                  const uniqueChats = Array.from(chatMap.values());
+                  props.setChatHistories(uniqueChats);
+                }
               }
             }, 200);
           }}
@@ -194,14 +232,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
             onClick={async () => {
               await props.deleteChatHistory(chat.id);
-              // 使用防抖更新
+              // 使用防抖更新 - 避免重複調用
               setTimeout(async () => {
-                const { data } = await props.fetchChatHistories(props.user!.id);
-                if (data) {
-                  const uniqueChats = data.filter((chat, index, arr) => 
-                    arr.findIndex(c => c.id === chat.id) === index
-                  );
-                  props.setChatHistories(uniqueChats);
+                if (props.user) {
+                  const { data } = await props.fetchChatHistories(props.user.id);
+                  if (data) {
+                    // 更強化的去重處理
+                    const chatMap = new Map();
+                    for (const chatItem of data) {
+                      if (!chatMap.has(chatItem.id)) {
+                        chatMap.set(chatItem.id, chatItem);
+                      }
+                    }
+                    const uniqueChats = Array.from(chatMap.values());
+                    props.setChatHistories(uniqueChats);
+                  }
                 }
               }, 200);
               props.setMenuOpenId(null);
@@ -279,32 +324,38 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             <button
               className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 
                          hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-semibold 
-                         transition-all duration-200 shadow-md hover:shadow-lg"
+                         transition-all duration-200 shadow-md hover:shadow-lg
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isCreatingNewChat || props.loading}
               onClick={async () => {
-                if (props.user && !props.loading) {
-                  // 清空當前訊息
-                  props.setMessages([]);
-                  props.setActiveChatId(null);
+                if (props.user && !props.loading && !isCreatingNewChat) {
+                  setIsCreatingNewChat(true);
                   
-                  // 創建新對話
-                  const { data } = await (await import("@/lib/chatHistory")).saveChatHistory(props.user.id, []);
-                  if (data?.[0]?.id) {
-                    props.setActiveChatId(data[0].id);
+                  // 清除之前的定時器
+                  if (createChatTimeout.current) {
+                    clearTimeout(createChatTimeout.current);
                   }
                   
-                  // 重新獲取歷史記錄，但使用防抖來避免過度更新
-                  const { data: updatedData } = await props.fetchChatHistories(props.user.id);
-                  if (updatedData) {
-                    // 去重處理
-                    const uniqueChats = updatedData.filter((chat, index, arr) => 
-                      arr.findIndex(c => c.id === chat.id) === index
-                    );
-                    props.setChatHistories(uniqueChats);
+                  try {
+                    // 清空當前訊息，準備新對話
+                    props.setMessages([]);
+                    props.setActiveChatId(null);
+                    
+                    // 同時清空可能的 pending 狀態（如果 Chat 組件有的話）
+                    // 這樣確保真正開始全新對話
+                    
+                  } catch (error) {
+                    console.error('準備新對話失敗:', error);
+                  } finally {
+                    // 快速重置狀態
+                    setTimeout(() => {
+                      setIsCreatingNewChat(false);
+                    }, 500);
                   }
                 }
               }}
             >
-              ✨ New Chat
+              {isCreatingNewChat ? "準備中..." : "✨ New Chat"}
             </button>
           )}
         </div>

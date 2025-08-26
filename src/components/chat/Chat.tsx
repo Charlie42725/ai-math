@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { saveChatHistory, fetchChatHistories, fetchChatHistoryById, renameChatHistory, deleteChatHistory, updateChatHistory } from "@/lib/chatHistory";
+import { deduplicateChatHistories, isDuplicateConversation, cleanupOldDuplicateRecords } from "@/lib/chatDeduplication";
 import ChatSidebar from "./ChatSidebar";
 import ChatTopbar from "./ChatTopbar";
 import ChatMain from "./ChatMain";
@@ -36,6 +37,7 @@ type ChatHistory = {
   id: string;
   title: string;
   messages: Message[];
+  created_at?: string; // 添加 created_at 屬性
 };
 
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -48,10 +50,49 @@ type ChatHistory = {
   // 追蹤目前對話視窗的 chat id
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   
-  // 防抖更新歷史記錄
+  // 新增：防止重複創建對話的狀態
+  const [isSavingChat, setIsSavingChat] = useState(false);
+  const [pendingChatId, setPendingChatId] = useState<string | null>(null);
+  
+  // 新增：檢查重複對話的函數
+  const checkDuplicateChat = (newTitle: string, firstMessage: string) => {
+    return isDuplicateConversation(newTitle, firstMessage, chatHistories);
+  };
+  
+  // 防抖更新歷史記錄 - 改善版本
   const updateChatHistoriesDebounced = useRef<NodeJS.Timeout | null>(null);
+  const [isUpdatingHistories, setIsUpdatingHistories] = useState(false);
+  const [newChatSaved, setNewChatSaved] = useState(false); // 新增：顯示對話已保存提示
+  
+  // 新增：即時更新函數（用於新對話）
+  const immediateUpdateHistories = async (userId: string) => {
+    if (isUpdatingHistories) return;
+    
+    setIsUpdatingHistories(true);
+    try {
+      const { data } = await fetchChatHistories(userId);
+      if (data) {
+        const rawChats = (data as any[]).map(chat => ({ 
+          ...chat, 
+          messages: chat.messages || [] 
+        }));
+        
+        let uniqueChats = deduplicateChatHistories(rawChats);
+        uniqueChats = cleanupOldDuplicateRecords(uniqueChats);
+        
+        setChatHistories(uniqueChats);
+      }
+    } catch (error) {
+      console.error('即時更新聊天歷史失敗:', error);
+    } finally {
+      setIsUpdatingHistories(false);
+    }
+  };
   
   const refreshChatHistories = async (userId: string) => {
+    // 如果正在更新，跳過此次請求
+    if (isUpdatingHistories) return;
+    
     // 清除之前的定時器
     if (updateChatHistoriesDebounced.current) {
       clearTimeout(updateChatHistoriesDebounced.current);
@@ -59,13 +100,35 @@ type ChatHistory = {
     
     // 設置新的定時器
     updateChatHistoriesDebounced.current = setTimeout(async () => {
-      const { data } = await fetchChatHistories(userId);
-      if (data) {
-        // 去重處理
-        const uniqueChats = (data as any[])
-          .map((c: any) => ({ ...c, messages: c.messages || [] }))
-          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index);
-        setChatHistories(uniqueChats);
+      setIsUpdatingHistories(true);
+      try {
+        const { data } = await fetchChatHistories(userId);
+        if (data) {
+          // 使用強化的去重處理
+          const rawChats = (data as any[]).map(chat => ({ 
+            ...chat, 
+            messages: chat.messages || [] 
+          }));
+          
+          // 多層去重處理
+          let uniqueChats = deduplicateChatHistories(rawChats);
+          uniqueChats = cleanupOldDuplicateRecords(uniqueChats);
+          
+          // 只在有實際變化時更新狀態
+          setChatHistories(prev => {
+            const prevIds = prev.map(c => c.id).sort().join(',');
+            const newIds = uniqueChats.map(c => c.id).sort().join(',');
+            
+            if (prevIds !== newIds) {
+              return uniqueChats;
+            }
+            return prev;
+          });
+        }
+      } catch (error) {
+        console.error('更新聊天歷史失敗:', error);
+      } finally {
+        setIsUpdatingHistories(false);
       }
     }, 300); // 300ms 延遲
   };
@@ -87,14 +150,19 @@ type ChatHistory = {
       }
     } else {
       setChatHistories([]);
+      // 重置所有相關狀態
+      setActiveChatId(null);
+      setPendingChatId(null);
+      setIsSavingChat(false);
     }
   }, [user, initialChatId]);
 
-  // 清除定時器
+  // 清除定時器 - 增強版本
   useEffect(() => {
     return () => {
       if (updateChatHistoriesDebounced.current) {
         clearTimeout(updateChatHistoriesDebounced.current);
+        updateChatHistoriesDebounced.current = null;
       }
     };
   }, []);
@@ -152,24 +220,71 @@ type ChatHistory = {
       setMessages(allMessages);
       // 登入狀態下儲存對話紀錄
       if (user) {
-        if (activeChatId) {
+        // 使用 activeChatId 或 pendingChatId 來確定當前對話
+        const currentChatId = activeChatId || pendingChatId;
+        
+        if (currentChatId) {
           // 更新現有 chat history
-          await updateChatHistory(activeChatId, allMessages);
-          // 如果這是新對話的第一句，更新 title
-          if (newMessages.length === 1 && newParts[0]?.text) {
-            const newTitle = newParts[0].text.slice(0, 20) || "新對話";
-            await renameChatHistory(activeChatId, newTitle);
-            // 只有在更新標題時才重新獲取歷史紀錄
-            await refreshChatHistories(user.id);
+          await updateChatHistory(currentChatId, allMessages);
+          
+          // 如果使用的是 pendingChatId，現在設為 activeChatId
+          if (pendingChatId && !activeChatId) {
+            setActiveChatId(pendingChatId);
+            setPendingChatId(null);
           }
-        } else {
-          // 新增 chat history
-          const { data } = await saveChatHistory(user.id, allMessages);
-          // 取得新 id
-          if (data && data[0]?.id) {
-            setActiveChatId(data[0].id);
-            // 只在新增對話時重新獲取歷史紀錄
-            await refreshChatHistories(user.id);
+          
+          // 如果這是對話的第一次交互，更新 title
+          if (allMessages.length === 2 && newParts[0]?.text) {
+            const newTitle = newParts[0].text.slice(0, 30) || "新對話";
+            await renameChatHistory(currentChatId, newTitle);
+            // 使用即時更新來快速更新側邊欄
+            setTimeout(async () => {
+              await immediateUpdateHistories(user.id);
+            }, 400); // 更快的響應時間
+          }
+        } else if (!isSavingChat) {
+          // 創建新對話 - 只有在沒有正在保存時才執行
+          setIsSavingChat(true);
+          try {
+            const newTitle = newParts[0]?.text?.slice(0, 30) || "新對話";
+            const firstMessage = newParts[0]?.text || "";
+            
+            // 檢查是否有重複對話
+            if (checkDuplicateChat(newTitle, firstMessage)) {
+              console.log('檢測到重複對話，跳過創建');
+              return;
+            }
+            
+            const { data } = await saveChatHistory(user.id, allMessages);
+            
+            if (data && data[0]?.id) {
+              const newChatId = data[0].id;
+              
+              // 檢查是否已存在此對話ID
+              const existingChat = chatHistories.find(chat => chat.id === newChatId);
+              if (!existingChat) {
+                setActiveChatId(newChatId);
+                
+                // 顯示保存提示
+                setNewChatSaved(true);
+                setTimeout(() => setNewChatSaved(false), 3000);
+                
+                // 立即更新標題
+                await renameChatHistory(newChatId, newTitle);
+                
+                // 使用即時更新 - 更快響應
+                setTimeout(async () => {
+                  await immediateUpdateHistories(user.id);
+                }, 500); // 只延遲 0.5 秒
+              } else {
+                // 如果已存在，使用現有的ID
+                setActiveChatId(newChatId);
+              }
+            }
+          } catch (error) {
+            console.error('保存對話失敗:', error);
+          } finally {
+            setIsSavingChat(false);
           }
         }
       }
@@ -254,6 +369,7 @@ type ChatHistory = {
           handleSend={handleSend}
           handleImageChange={handleImageChange}
           image={image}
+          newChatSaved={newChatSaved}
         />
       </div>
     </div>
