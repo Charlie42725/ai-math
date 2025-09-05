@@ -19,6 +19,7 @@ interface Question {
 interface Answer {
   questionId: number;
   answer: string;
+  process?: string; // 新增：解題過程
   isCorrect?: boolean;
   feedback?: string;
   explanation?: string;
@@ -84,7 +85,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   }, [examStarted, timeRemaining, isSubmitted]);
 
   // 提交單題答案
-  const handleSubmitAnswer = async (questionId: number, answer: string) => {
+  const handleSubmitAnswer = async (questionId: number, answer: string, process?: string) => {
     const question = selectedQuestions.find(q => q.id === questionId);
     if (!question) return;
 
@@ -104,6 +105,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
         body: JSON.stringify({
           question: question.content,
           userAnswer: answer,
+          userProcess: process || '', // 新增：用戶解題過程
           correctAnswer: question.correctAnswer,
           questionType: question.type
         }),
@@ -132,6 +134,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
       const newAnswer: Answer = {
         questionId,
         answer,
+        process, // 新增：解題過程
         isCorrect,
         feedback,
         explanation
@@ -253,6 +256,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
               question={currentQuestionData}
               questionNumber={currentQuestion + 1}
               currentAnswer={currentAnswer?.answer || ''}
+              currentProcess={currentAnswer?.process || ''}
               onAnswerSubmit={handleSubmitAnswer}
               disabled={false}
               isSubmitted={currentQuestionSubmitted}
