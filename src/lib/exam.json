@@ -39,7 +39,7 @@
   "grade": "七下",
   "unit": "二元一次聯立方程式",
   "keywords": ["代入法", "聯立方程式", "代數"],
-  "question": "若二元一次聯立方程式\n5x − 3y = 28\n3y = −x\n的解為 x = a，y = b，則 a＋b 之值為何？",
+  "question": "若二元一次聯立方程式\n5x − 3y = 28\ny = −3x\n的解為 x = a，y = b，則 a＋b 之值為何？",
   "image": "",
   "options": {
     "A": "－28",

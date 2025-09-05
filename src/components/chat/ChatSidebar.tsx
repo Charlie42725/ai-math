@@ -404,7 +404,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
       </div>
 
       {/* 底部工具列 */}
-      <div className="p-4 border-t border-slate-700/50">
+      <div className="p-4 border-t border-slate-700/50 space-y-3">
+        <button 
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 
+                     hover:from-green-500/20 hover:to-emerald-500/20 text-green-400 
+                     font-medium transition-all duration-200 border border-green-500/20 
+                     hover:border-green-400/30"
+          onClick={() => router.push('/test')}
+        >
+          📝 會考模擬題
+        </button>
         <button 
           className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 
                      hover:from-blue-500/20 hover:to-indigo-500/20 text-blue-400 
