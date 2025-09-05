@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import ConceptChart from "./ConceptChart";
-import UnstableChart from "./UnstableChart";
-import FeedbackList from "./FeedbackList";
+import GameDashboard from "./GameDashboard";
 
 type Analysis = {
   id: string;
@@ -63,18 +61,18 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
       {/* 頂部標題區 */}
       <div className="p-6 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-            <span className="text-xl">📊</span>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
+            <span className="text-xl">🎮</span>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            AI分析報表
+          <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            學習卡片儀表板
           </span>
         </div>
         
         <div className="flex items-center gap-4">
           <button
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 
-                       hover:from-indigo-600 hover:to-purple-700 text-white font-semibold 
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 
+                       hover:from-purple-600 hover:to-pink-700 text-white font-semibold 
                        transition-all duration-200 shadow-md hover:shadow-lg 
                        disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAnalyze}
@@ -86,7 +84,7 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
                 分析中...
               </div>
             ) : (
-              "🚀 開始分析"
+              "🎮 開始分析"
             )}
           </button>
           
@@ -107,10 +105,8 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
       </div>
 
       {/* 內容區域 */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-        <ConceptChart data={data} />
-        <UnstableChart data={data} />
-        <FeedbackList data={data} />
+      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+        <GameDashboard data={data} />
       </div>
     </div>
   );
