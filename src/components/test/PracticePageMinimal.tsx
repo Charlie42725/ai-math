@@ -5,6 +5,13 @@ import ExamSettings from './ExamSettings';
 import QuestionCardSimple from './QuestionCardSimple';
 import FooterControls from './FooterControls';
 import Timer from './Timer';
+import { 
+  getRandomQuestions, 
+  getMixedQuestions, 
+  getQuestionsByGrade, 
+  getQuestionsByUnit,
+  FormattedQuestion 
+} from '@/lib/questionBank';
 
 interface Question {
   id: number;
@@ -14,6 +21,11 @@ interface Question {
   options?: string[];
   correctAnswer?: string;
   points: number;
+  originalId?: string;
+  grade?: string;
+  unit?: string;
+  keywords?: string[];
+  explanation?: string;
 }
 
 interface Answer {
@@ -35,6 +47,12 @@ interface SubmissionResult {
   explanation: string;
 }
 
+interface ExamSettingsData {
+  mode: 'random' | 'grade' | 'unit' | 'mixed';
+  selectedGrade?: string;
+  selectedUnit?: string;
+}
+
 const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   // 考試設定階段
   const [examStarted, setExamStarted] = useState(false);
@@ -53,11 +71,52 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const [currentQuestionResult, setCurrentQuestionResult] = useState<SubmissionResult | null>(null);
 
   // 開始考試
-  const handleStartExam = (questionCount: number) => {
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, questionCount);
+  const handleStartExam = (questionCount: number, settings?: ExamSettingsData) => {
+    let selected: FormattedQuestion[] = [];
     
-    setSelectedQuestions(selected);
+    try {
+      if (settings) {
+        switch (settings.mode) {
+          case 'random':
+            selected = getRandomQuestions(questionCount);
+            break;
+          case 'grade':
+            if (settings.selectedGrade) {
+              selected = getQuestionsByGrade(settings.selectedGrade, questionCount);
+            } else {
+              selected = getRandomQuestions(questionCount);
+            }
+            break;
+          case 'unit':
+            if (settings.selectedUnit) {
+              selected = getQuestionsByUnit(settings.selectedUnit, questionCount);
+            } else {
+              selected = getRandomQuestions(questionCount);
+            }
+            break;
+          case 'mixed':
+          default:
+            selected = getMixedQuestions(questionCount);
+            break;
+        }
+      } else {
+        // 如果沒有設定，從傳入的 questions 中隨機選擇
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
+        selected = shuffled.slice(0, questionCount) as FormattedQuestion[];
+      }
+      
+      // 如果選到的題目不足，補足剩餘的題目
+      if (selected.length < questionCount) {
+        const additional = getRandomQuestions(questionCount - selected.length);
+        selected = [...selected, ...additional];
+      }
+    } catch (error) {
+      console.error('選取題目時出錯:', error);
+      // 錯誤時使用隨機選題作為後備方案
+      selected = getRandomQuestions(questionCount);
+    }
+    
+    setSelectedQuestions(selected as Question[]);
     setSelectedQuestionCount(questionCount);
     setTimeRemaining(questionCount * 3 * 60); // 每題3分鐘
     setExamStarted(true);
@@ -65,6 +124,8 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     setAnswers([]);
     setIsSubmitted(false);
     setShowResults(false);
+    setCurrentQuestionSubmitted(false);
+    setCurrentQuestionResult(null);
   };
 
   // 計時器
