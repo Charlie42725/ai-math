@@ -24,7 +24,7 @@ export default function FooterControls({
   const progress = Math.round(((currentQuestion + 1) / totalQuestions) * 100);
 
   return (
-    <div className="bg-slate-800/30 backdrop-blur-sm border-t border-slate-700/50 px-6 py-4">
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur-sm border-t border-slate-700/50 px-6 py-4 z-30">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* 左側：上一題 */}
         <button

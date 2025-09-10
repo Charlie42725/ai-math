@@ -5,6 +5,7 @@ import ExamSettings from './ExamSettings';
 import QuestionCardSimple from './QuestionCardSimple';
 import FooterControls from './FooterControls';
 import Timer from './Timer';
+import AnalysisSidebar from './AnalysisSidebar';
 import { 
   getRandomQuestions, 
   getMixedQuestions, 
@@ -74,6 +75,9 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const [currentQuestionSubmitted, setCurrentQuestionSubmitted] = useState(false);
   const [currentQuestionResult, setCurrentQuestionResult] = useState<SubmissionResult | null>(null);
 
+  // 新增：側邊欄狀態 - 默認隱藏
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
   // 開始考試
   const handleStartExam = (questionCount: number, settings?: ExamSettingsData) => {
     let selected: FormattedQuestion[] = [];
@@ -130,6 +134,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     setShowResults(false);
     setCurrentQuestionSubmitted(false);
     setCurrentQuestionResult(null);
+    setSidebarVisible(false); // 開始考試時隱藏側邊欄
   };
 
   // 計時器
@@ -229,6 +234,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
 
       setCurrentQuestionResult(result);
       setCurrentQuestionSubmitted(true);
+      setSidebarVisible(true); // 顯示分析結果側邊欄
 
     } catch (error) {
       console.error('提交答案時發生錯誤:', error);
@@ -239,24 +245,61 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
       };
       setCurrentQuestionResult(fallbackResult);
       setCurrentQuestionSubmitted(true);
+      setSidebarVisible(true); // 顯示分析結果側邊欄
     }
   };
 
   // 上一題
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-      setCurrentQuestionSubmitted(false);
-      setCurrentQuestionResult(null);
+      const newQuestionIndex = currentQuestion - 1;
+      setCurrentQuestion(newQuestionIndex);
+      
+      // 檢查新題目是否已有答案和分析結果
+      const newQuestionId = selectedQuestions[newQuestionIndex]?.id;
+      const existingAnswer = answers.find(a => a.questionId === newQuestionId);
+      
+      if (existingAnswer) {
+        setCurrentQuestionSubmitted(true);
+        // 重建分析結果
+        setCurrentQuestionResult({
+          isCorrect: existingAnswer.isCorrect || false,
+          feedback: existingAnswer.feedback || '',
+          explanation: existingAnswer.explanation || ''
+        });
+        setSidebarVisible(true);
+      } else {
+        setCurrentQuestionSubmitted(false);
+        setCurrentQuestionResult(null);
+        setSidebarVisible(false);
+      }
     }
   };
 
   // 下一題
   const handleNextQuestion = () => {
     if (currentQuestion < selectedQuestions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setCurrentQuestionSubmitted(false);
-      setCurrentQuestionResult(null);
+      const newQuestionIndex = currentQuestion + 1;
+      setCurrentQuestion(newQuestionIndex);
+      
+      // 檢查新題目是否已有答案和分析結果
+      const newQuestionId = selectedQuestions[newQuestionIndex]?.id;
+      const existingAnswer = answers.find(a => a.questionId === newQuestionId);
+      
+      if (existingAnswer) {
+        setCurrentQuestionSubmitted(true);
+        // 重建分析結果
+        setCurrentQuestionResult({
+          isCorrect: existingAnswer.isCorrect || false,
+          feedback: existingAnswer.feedback || '',
+          explanation: existingAnswer.explanation || ''
+        });
+        setSidebarVisible(true);
+      } else {
+        setCurrentQuestionSubmitted(false);
+        setCurrentQuestionResult(null);
+        setSidebarVisible(false);
+      }
     }
   };
 
@@ -275,6 +318,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     setAnswers([]);
     setCurrentQuestionSubmitted(false);
     setCurrentQuestionResult(null);
+    setSidebarVisible(false); // 重新開始時隱藏側邊欄
   };
 
   if (!examStarted) {
@@ -319,20 +363,43 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const currentAnswer = answers.find(a => a.questionId === currentQuestionData?.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pb-20">
       {/* 頂部計時器和進度 */}
       <div className="sticky top-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-700 p-4 z-10">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="text-sm text-slate-300">
             第 {currentQuestion + 1} 題 / 共 {selectedQuestions.length} 題
           </div>
-          <Timer timeRemaining={timeRemaining} />
+          
+          <div className="flex items-center space-x-4">
+            {/* AI 分析結果按鈕 */}
+            {currentQuestionResult && (
+              <button
+                onClick={() => setSidebarVisible(!sidebarVisible)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg ${
+                  sidebarVisible 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-blue-500/25' 
+                    : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600/70 border border-slate-600/50 hover:border-blue-400/50'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>🤖 AI 分析</span>
+                {!sidebarVisible && (
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                )}
+              </button>
+            )}
+            
+            <Timer timeRemaining={timeRemaining} />
+          </div>
         </div>
       </div>
 
       {/* 主要內容區域 */}
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className={`transition-all duration-300 ${sidebarVisible ? 'pr-6' : ''}`}>
+        <div className={`p-6 ${sidebarVisible ? 'max-w-none w-1/2' : 'max-w-4xl mx-auto'} transition-all duration-300`}>
           {currentQuestionData && (
             <QuestionCardSimple
               question={currentQuestionData}
@@ -342,7 +409,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
               onAnswerSubmit={handleSubmitAnswer}
               disabled={false}
               isSubmitted={currentQuestionSubmitted}
-              result={currentQuestionResult}
+              result={null} // 不顯示內嵌結果，使用側邊欄
             />
           )}
         </div>
@@ -358,6 +425,15 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
         isSubmitted={isSubmitted}
         canSubmit={answers.length > 0}
       />
+
+      {/* AI 分析結果側邊欄 - 只有在有分析結果時才顯示 */}
+      {currentQuestionResult && (
+        <AnalysisSidebar
+          result={currentQuestionResult}
+          isVisible={sidebarVisible}
+          onToggle={() => setSidebarVisible(!sidebarVisible)}
+        />
+      )}
     </div>
   );
 };
