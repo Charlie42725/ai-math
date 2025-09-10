@@ -1,4 +1,4 @@
-import questionsData from './test/batch_01_questions.json';
+import questionsData from './batch_01_questions.json';
 
 export interface QuestionData {
   id: string;

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { getAvailableGrades, getAvailableUnits } from '@/lib/questionBank';
+import { getAvailableGrades, getAvailableUnits } from '../../test/questionBank';
 
 interface ExamSettingsProps {
   onStartExam: (questionCount: number, settings?: ExamSettings) => void;

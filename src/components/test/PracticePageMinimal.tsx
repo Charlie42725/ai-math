@@ -11,7 +11,7 @@ import {
   getQuestionsByGrade, 
   getQuestionsByUnit,
   FormattedQuestion 
-} from '@/lib/questionBank';
+} from '@/test/questionBank';
 
 interface Question {
   id: number;
