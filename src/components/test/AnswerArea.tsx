@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Question {
   id: number;
@@ -31,9 +31,20 @@ export default function AnswerArea({
   const [localAnswer, setLocalAnswer] = useState(currentAnswer);
   const [localProcess, setLocalProcess] = useState(currentProcess); // 新增：本地解題過程
   const [isSubmitted, setIsSubmitted] = useState(!!currentAnswer);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 新增：提交狀態
+
+  // 當切換題目時，更新本地狀態
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+    setLocalProcess(currentProcess);
+    setIsSubmitted(!!currentAnswer);
+    setIsSubmitting(false); // 重置提交狀態
+  }, [currentAnswer, currentProcess, question.id]); // 監聽題目 ID 變化
 
   const handleSubmit = async () => {
     if (localAnswer.trim()) {
+      setIsSubmitting(true); // 開始提交，顯示載入狀態
+
       try {
         // 呼叫新的分析 API
         const response = await fetch('/api/analyze-answer', {
@@ -63,6 +74,8 @@ export default function AnswerArea({
         // 錯誤時仍然提交基本資料
         onAnswerSubmit(question.id, localAnswer, localProcess);
         setIsSubmitted(true);
+      } finally {
+        setIsSubmitting(false); // 結束提交，隱藏載入狀態
       }
     }
   };
@@ -188,13 +201,19 @@ export default function AnswerArea({
           <div className="flex justify-end">
             <button
               onClick={handleSubmit}
-              disabled={!localAnswer}
+              disabled={!localAnswer || isSubmitting}
               className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 
                          disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
                          text-white font-medium rounded-xl transition-all duration-200
-                         shadow-lg hover:shadow-blue-500/25 text-lg"
+                         shadow-lg hover:shadow-blue-500/25 text-lg flex items-center space-x-2"
             >
-              提交答案與解題過程
+              {isSubmitting && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              <span>{isSubmitting ? '分析中...' : '提交答案與解題過程'}</span>
             </button>
           </div>
         )}
@@ -252,13 +271,19 @@ export default function AnswerArea({
         <div className="mt-6 flex justify-end">
           <button
             onClick={handleSubmit}
-            disabled={!localAnswer.trim()}
+            disabled={!localAnswer.trim() || isSubmitting}
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 
                        disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
                        text-white font-medium rounded-xl transition-all duration-200
-                       shadow-lg hover:shadow-blue-500/25"
+                       shadow-lg hover:shadow-blue-500/25 flex items-center space-x-2"
           >
-            提交答案
+            {isSubmitting && (
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            <span>{isSubmitting ? '分析中...' : '提交答案'}</span>
           </button>
         </div>
       )}

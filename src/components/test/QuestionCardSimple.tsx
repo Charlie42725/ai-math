@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Question {
   id: number;
@@ -45,9 +45,18 @@ const QuestionCardSimple = ({
 }: QuestionCardSimpleProps) => {
   const [localAnswer, setLocalAnswer] = useState(currentAnswer);
   const [localProcess, setLocalProcess] = useState(currentProcess); // 新增：本地解題過程
+  const [isSubmitting, setIsSubmitting] = useState(false); // 新增：提交狀態
+
+  // 當切換題目時，更新本地狀態
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+    setLocalProcess(currentProcess);
+    setIsSubmitting(false); // 重置提交狀態
+  }, [currentAnswer, currentProcess, question.id]); // 監聽題目 ID 變化
 
   const handleSubmit = async () => {
     if (localAnswer.trim()) {
+      setIsSubmitting(true); // 開始提交
       try {
         // 呼叫新的分析 API
         const response = await fetch('/api/analyze-answer', {
@@ -74,6 +83,8 @@ const QuestionCardSimple = ({
         console.error('提交失敗:', error);
         // 錯誤時仍然提交基本資料
         onAnswerSubmit(question.id, localAnswer, localProcess);
+      } finally {
+        setIsSubmitting(false); // 結束提交
       }
     }
   };
@@ -253,13 +264,21 @@ const QuestionCardSimple = ({
             <div className="flex justify-center">
               <button
                 onClick={handleSubmit}
-                disabled={!localAnswer.trim() || disabled}
+                disabled={!localAnswer.trim() || disabled || isSubmitting}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
                          disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
                          px-8 py-3 rounded-xl font-semibold text-white transition-all duration-200 
-                         shadow-md hover:shadow-blue-500/25 hover:scale-105"
+                         shadow-md hover:shadow-blue-500/25 hover:scale-105 flex items-center space-x-2"
               >
-                {question.type === 'multiple' ? '提交答案與解題過程' : '提交答案'}
+                {isSubmitting && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                <span>
+                  {isSubmitting 
+                    ? '分析中...' 
+                    : (question.type === 'multiple' ? '提交答案與解題過程' : '提交答案')
+                  }
+                </span>
               </button>
             </div>
           )}
