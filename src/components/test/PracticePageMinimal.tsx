@@ -45,6 +45,10 @@ interface SubmissionResult {
   isCorrect: boolean;
   feedback: string;
   explanation: string;
+  detailedAnalysis?: string;
+  thinkingProcess?: string;
+  optimization?: string;
+  suggestions?: string[];
 }
 
 interface ExamSettingsData {
@@ -146,59 +150,76 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   }, [examStarted, timeRemaining, isSubmitted]);
 
   // 提交單題答案
-  const handleSubmitAnswer = async (questionId: number, answer: string, process?: string) => {
+  const handleSubmitAnswer = async (questionId: number, answer: string, process?: string, analysisData?: any) => {
     const question = selectedQuestions.find(q => q.id === questionId);
     if (!question) return;
 
     try {
-      // 基本正確性檢查
-      let isCorrect = false;
-      if (question.type === 'multiple') {
-        isCorrect = answer === question.correctAnswer;
-      }
-
-      // 呼叫 Gemini API 進行詳細評估
-      const response = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: question.content,
-          userAnswer: answer,
-          userProcess: process || '', // 新增：用戶解題過程
-          correctAnswer: question.correctAnswer,
-          questionType: question.type
-        }),
-      });
-
-      let feedback = "";
-      let explanation = "";
-
-      if (response.ok) {
-        const data = await response.json();
-        feedback = data.feedback || (isCorrect ? "答案正確！" : "答案錯誤");
-        explanation = data.explanation || question.correctAnswer || "";
+      let result: SubmissionResult;
+      
+      // 如果已經有分析資料，直接使用
+      if (analysisData && analysisData.success) {
+        result = {
+          isCorrect: analysisData.isCorrect,
+          feedback: analysisData.feedback,
+          explanation: analysisData.explanation,
+          detailedAnalysis: analysisData.detailedAnalysis,
+          thinkingProcess: analysisData.thinkingProcess,
+          optimization: analysisData.optimization,
+          suggestions: analysisData.suggestions
+        };
       } else {
-        // AI 評估失敗時的後備方案
-        feedback = isCorrect ? "答案正確！" : "答案錯誤";
-        explanation = question.correctAnswer || "";
-      }
+        // 如果沒有分析資料，呼叫原本的 API 或使用基本檢查
+        const isCorrect = question.type === 'multiple' ? answer === question.correctAnswer : false;
+        
+        try {
+          // 呼叫 Gemini API 進行詳細評估
+          const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              question: question.content,
+              userAnswer: answer,
+              userProcess: process || '',
+              correctAnswer: question.correctAnswer,
+              questionType: question.type
+            }),
+          });
 
-      const result: SubmissionResult = {
-        isCorrect,
-        feedback,
-        explanation
-      };
+          if (response.ok) {
+            const data = await response.json();
+            result = {
+              isCorrect,
+              feedback: data.feedback || (isCorrect ? "答案正確！" : "答案錯誤"),
+              explanation: data.explanation || question.correctAnswer || "",
+              detailedAnalysis: data.detailedAnalysis,
+              thinkingProcess: data.thinkingProcess,
+              optimization: data.optimization,
+              suggestions: data.suggestions
+            };
+          } else {
+            throw new Error('API 請求失敗');
+          }
+        } catch (apiError) {
+          // AI 評估失敗時的後備方案
+          result = {
+            isCorrect,
+            feedback: isCorrect ? "答案正確！" : "答案錯誤",
+            explanation: question.correctAnswer || "",
+          };
+        }
+      }
 
       // 更新答案記錄
       const newAnswer: Answer = {
         questionId,
         answer,
-        process, // 新增：解題過程
-        isCorrect,
-        feedback,
-        explanation
+        process,
+        isCorrect: result.isCorrect,
+        feedback: result.feedback,
+        explanation: result.explanation
       };
 
       setAnswers(prev => {

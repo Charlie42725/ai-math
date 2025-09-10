@@ -16,6 +16,10 @@ interface SubmissionResult {
   isCorrect: boolean;
   feedback: string;
   explanation: string;
+  detailedAnalysis?: string;
+  thinkingProcess?: string;
+  optimization?: string;
+  suggestions?: string[];
 }
 
 interface QuestionCardSimpleProps {
@@ -23,7 +27,7 @@ interface QuestionCardSimpleProps {
   questionNumber: number;
   currentAnswer: string;
   currentProcess?: string; // 新增：解題過程
-  onAnswerSubmit: (questionId: number, answer: string, process?: string) => void;
+  onAnswerSubmit: (questionId: number, answer: string, process?: string, analysisData?: any) => void;
   disabled?: boolean;
   isSubmitted?: boolean;
   result?: SubmissionResult | null;
@@ -42,9 +46,35 @@ const QuestionCardSimple = ({
   const [localAnswer, setLocalAnswer] = useState(currentAnswer);
   const [localProcess, setLocalProcess] = useState(currentProcess); // 新增：本地解題過程
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (localAnswer.trim()) {
-      onAnswerSubmit(question.id, localAnswer, localProcess);
+      try {
+        // 呼叫新的分析 API
+        const response = await fetch('/api/analyze-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            questionId: question.id,
+            userAnswer: localAnswer,
+            userProcess: localProcess,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // 將詳細分析結果傳遞給父元件
+          onAnswerSubmit(question.id, localAnswer, localProcess, data);
+        } else {
+          console.error('分析失敗:', data.error);
+          // 錯誤時仍然提交基本資料
+          onAnswerSubmit(question.id, localAnswer, localProcess);
+        }
+      } catch (error) {
+        console.error('提交失敗:', error);
+        // 錯誤時仍然提交基本資料
+        onAnswerSubmit(question.id, localAnswer, localProcess);
+      }
     }
   };
 
@@ -162,15 +192,57 @@ const QuestionCardSimple = ({
 
           {/* 提交結果顯示 */}
           {result && (
-            <div className={`mb-6 p-4 rounded-xl border-2 ${
-              result.isCorrect 
-                ? 'border-green-500 bg-green-500/10 text-green-300' 
-                : 'border-red-500 bg-red-500/10 text-red-300'
-            }`}>
-              <div className="font-semibold mb-2">{result.feedback}</div>
-              {result.explanation && (
-                <div className="text-sm opacity-90">
-                  <strong>解析：</strong>{result.explanation}
+            <div className="space-y-4">
+              {/* 基本回饋 */}
+              <div className={`p-4 rounded-xl border-2 ${
+                result.isCorrect 
+                  ? 'border-green-500 bg-green-500/10 text-green-300' 
+                  : 'border-red-500 bg-red-500/10 text-red-300'
+              }`}>
+                <div className="font-semibold mb-2">{result.feedback}</div>
+                {result.explanation && (
+                  <div className="text-sm opacity-90">
+                    <strong>解析：</strong>{result.explanation}
+                  </div>
+                )}
+              </div>
+
+              {/* 詳細分析結果 */}
+              {result.detailedAnalysis && (
+                <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10">
+                  <h4 className="font-semibold text-blue-300 mb-2">🔍 詳細分析</h4>
+                  <p className="text-sm text-blue-200">{result.detailedAnalysis}</p>
+                </div>
+              )}
+
+              {/* 思考過程評估 */}
+              {result.thinkingProcess && (
+                <div className="p-4 rounded-xl border border-purple-500/30 bg-purple-500/10">
+                  <h4 className="font-semibold text-purple-300 mb-2">🧠 思考過程評估</h4>
+                  <p className="text-sm text-purple-200">{result.thinkingProcess}</p>
+                </div>
+              )}
+
+              {/* 優化建議 */}
+              {result.optimization && (
+                <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10">
+                  <h4 className="font-semibold text-amber-300 mb-2">💡 優化建議</h4>
+                  <p className="text-sm text-amber-200">{result.optimization}</p>
+                </div>
+              )}
+
+              {/* 學習建議 */}
+              {result.suggestions && result.suggestions.length > 0 && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                  <h4 className="font-semibold text-emerald-300 mb-2">📚 學習建議</h4>
+                  <ul className="text-sm text-emerald-200 space-y-1">
+                    {result.suggestions.map((suggestion, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <span className="text-emerald-400">•</span>
+                        <span>{suggestion}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

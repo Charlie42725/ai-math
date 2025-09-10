@@ -17,7 +17,7 @@ interface AnswerAreaProps {
   question: Question;
   currentAnswer: string;
   currentProcess?: string; // 新增：解題過程
-  onAnswerSubmit: (questionId: number, answer: string, process?: string) => void;
+  onAnswerSubmit: (questionId: number, answer: string, process?: string, analysisData?: any) => void;
   disabled?: boolean;
 }
 
@@ -32,10 +32,38 @@ export default function AnswerArea({
   const [localProcess, setLocalProcess] = useState(currentProcess); // 新增：本地解題過程
   const [isSubmitted, setIsSubmitted] = useState(!!currentAnswer);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (localAnswer.trim()) {
-      onAnswerSubmit(question.id, localAnswer, localProcess);
-      setIsSubmitted(true);
+      try {
+        // 呼叫新的分析 API
+        const response = await fetch('/api/analyze-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            questionId: question.id,
+            userAnswer: localAnswer,
+            userProcess: localProcess,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // 將詳細分析結果傳遞給父元件
+          onAnswerSubmit(question.id, localAnswer, localProcess, data);
+        } else {
+          console.error('分析失敗:', data.error);
+          // 錯誤時仍然提交基本資料
+          onAnswerSubmit(question.id, localAnswer, localProcess);
+        }
+        
+        setIsSubmitted(true);
+      } catch (error) {
+        console.error('提交失敗:', error);
+        // 錯誤時仍然提交基本資料
+        onAnswerSubmit(question.id, localAnswer, localProcess);
+        setIsSubmitted(true);
+      }
     }
   };
 
