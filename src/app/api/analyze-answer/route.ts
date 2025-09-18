@@ -76,11 +76,22 @@ D: ${question.options.D}
   "explanation": "簡短說明正確答案",
   "detailedAnalysis": "詳細分析題目和解題方法", 
   "thinkingProcess": "評估學生的思考過程和解題邏輯",
+  "thinkingScore": 4,
   "optimization": "給學生的改進建議",
-  "suggestions": ["學習建議1", "學習建議2"]
+  "suggestions": ["學習建議1", "學習建議2"],
+  "stepByStepSolution": [
+    {"step": 1, "title": "理解題意", "content": "首先分析題目要求..."},
+    {"step": 2, "title": "選擇方法", "content": "根據題目特點選擇..."},
+    {"step": 3, "title": "計算過程", "content": "具體計算步驟..."}
+  ],
+  "keyPoints": ["重點概念1", "重點概念2"]
 }
 
-注意：feedback 欄位請保持簡潔，其他詳細內容請放在對應的專門欄位中。
+注意：
+- feedback 欄位請保持簡潔
+- thinkingScore 為1-5分，評估學生思考過程的完整性和正確性
+- stepByStepSolution 提供步驟式解題過程
+- keyPoints 列出該題目的關鍵知識點
 `;
 
       // 呼叫 Gemini API 進行詳細分析
@@ -117,8 +128,11 @@ D: ${question.options.D}
           explanation: '',
           detailedAnalysis: '',
           thinkingProcess: '',
+          thinkingScore: 3,
           optimization: '',
-          suggestions: []
+          suggestions: [],
+          stepByStepSolution: [],
+          keyPoints: []
         };
       }
 
@@ -134,7 +148,10 @@ D: ${question.options.D}
         optimization: aiResult.optimization || "建議多練習類似題型",
         detailedAnalysis: aiResult.detailedAnalysis || question.explanation,
         thinkingProcess: aiResult.thinkingProcess || "",
-        suggestions: aiResult.suggestions || []
+        thinkingScore: aiResult.thinkingScore || (userProcess ? 3 : 1),
+        suggestions: aiResult.suggestions || [],
+        stepByStepSolution: aiResult.stepByStepSolution || [],
+        keyPoints: aiResult.keyPoints || []
       });
 
     } catch (aiError) {
@@ -149,7 +166,10 @@ D: ${question.options.D}
         optimization: "建議檢查解題步驟是否正確",
         detailedAnalysis: question.explanation,
         thinkingProcess: "",
-        suggestions: ["多練習類似題型", "仔細閱讀題目"]
+        thinkingScore: userProcess ? 2 : 1,
+        suggestions: ["多練習類似題型", "仔細閱讀題目"],
+        stepByStepSolution: [],
+        keyPoints: []
       });
     }
 

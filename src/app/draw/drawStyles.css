@@ -1,0 +1,304 @@
+/* ===========================================
+   抽獎系統樣式
+   ========================================== */
+
+/* 全局樣式 */
+.lottery-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+/* 軌道容器樣式 */
+.pack-scroll {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  margin: 0 auto;
+}
+
+.orbit-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: orbit 8s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.orbit-container.paused {
+  animation-play-state: paused;
+}
+
+/* 禮包卡片樣式 */
+.card-pack {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* 禮包位置計算 */
+.card-pack:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+}
+
+.card-pack:nth-child(2) {
+  top: 25%;
+  right: 0;
+  transform: translateX(40px) translateY(-50%);
+}
+
+.card-pack:nth-child(3) {
+  bottom: 25%;
+  right: 0;
+  transform: translateX(40px) translateY(50%);
+}
+
+.card-pack:nth-child(4) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+}
+
+.card-pack:nth-child(5) {
+  bottom: 25%;
+  left: 0;
+  transform: translateX(-40px) translateY(50%);
+}
+
+.card-pack:nth-child(6) {
+  top: 25%;
+  left: 0;
+  transform: translateX(-40px) translateY(-50%);
+}
+
+/* 禮包懸停效果 */
+.card-pack:hover {
+  transform: scale(1.1) translateZ(10px);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  animation: float 2s ease-in-out infinite;
+}
+
+/* 選中的禮包樣式 */
+.card-pack.selected {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-color: rgba(255, 215, 0, 0.8);
+  animation: glow 1.5s ease-in-out infinite, pulse 2s ease-in-out infinite;
+  z-index: 10;
+  transform: scale(1.2);
+}
+
+/* 拖拽中的禮包樣式 */
+.card-pack.dragging {
+  animation: shake 0.5s ease-in-out infinite;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  box-shadow: 0 20px 60px rgba(255, 105, 180, 0.4);
+}
+
+/* 爆炸效果樣式 */
+.explosion {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, 
+    rgba(255, 215, 0, 0.9) 0%, 
+    rgba(255, 165, 0, 0.7) 30%, 
+    rgba(255, 69, 0, 0.5) 60%, 
+    transparent 100%);
+  transform: translate(-50%, -50%);
+  animation: explosion 1s ease-out;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* 爆炸粒子效果 */
+.explosion::before,
+.explosion::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 215, 0, 0.8);
+  border-radius: 50%;
+  animation: particle-explosion 1s ease-out infinite;
+}
+
+.explosion::before {
+  animation-delay: 0.1s;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.explosion::after {
+  animation-delay: 0.2s;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* 獎品卡片樣式 */
+.prize-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  animation: scaleIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-style: preserve-3d;
+}
+
+.prize-card.flipped {
+  animation: flipIn 1s ease-out;
+}
+
+/* 標題樣式 */
+.lottery-title {
+  animation: titleBounce 3s ease-in-out infinite;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 說明文字樣式 */
+.instruction-text {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 2rem;
+}
+
+/* 拖拽提示動畫 */
+.drag-hint {
+  animation: dragHint 2s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+/* 成功提示樣式 */
+.success-indicator {
+  animation: success 1s ease-out;
+  color: #4ade80;
+  text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+}
+
+/* 背景動畫 */
+.animated-background {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* 星星效果 */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star:nth-child(odd) {
+  animation-delay: 1s;
+}
+
+.star:nth-child(even) {
+  animation-delay: 2s;
+}
+
+/* 彩紙效果 */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f39c12;
+  animation: confetti 3s linear infinite;
+}
+
+.confetti-piece:nth-child(2n) {
+  background: #e74c3c;
+}
+
+.confetti-piece:nth-child(3n) {
+  background: #9b59b6;
+}
+
+.confetti-piece:nth-child(4n) {
+  background: #3498db;
+}
+
+.confetti-piece:nth-child(5n) {
+  background: #2ecc71;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .pack-scroll {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .card-pack {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .lottery-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pack-scroll {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .card-pack {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .lottery-title {
+    font-size: 1.5rem;
+  }
+}

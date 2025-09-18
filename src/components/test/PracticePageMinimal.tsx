@@ -5,7 +5,7 @@ import ExamSettings from './ExamSettings';
 import QuestionCardSimple from './QuestionCardSimple';
 import FooterControls from './FooterControls';
 import Timer from './Timer';
-import AnalysisSidebar from './AnalysisSidebar';
+import EnhancedAnalysisSidebar from './EnhancedAnalysisSidebar';
 import { 
   getRandomQuestions, 
   getMixedQuestions, 
@@ -427,11 +427,19 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
       />
 
       {/* AI 分析結果側邊欄 - 只有在有分析結果時才顯示 */}
-      {currentQuestionResult && (
-        <AnalysisSidebar
+      {currentQuestionResult && currentQuestionData && (
+        <EnhancedAnalysisSidebar
           result={currentQuestionResult}
           isVisible={sidebarVisible}
           onToggle={() => setSidebarVisible(!sidebarVisible)}
+          userAnswer={currentAnswer?.answer}
+          correctAnswer={currentQuestionData.correctAnswer}
+          options={currentQuestionData.options ? {
+            A: currentQuestionData.options[0] || '',
+            B: currentQuestionData.options[1] || '',
+            C: currentQuestionData.options[2] || '',
+            D: currentQuestionData.options[3] || ''
+          } : undefined}
         />
       )}
     </div>
