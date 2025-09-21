@@ -109,10 +109,10 @@ const LotteryBox: React.FC<LotteryBoxProps> = ({ onPrizeWon }) => {
   }, [isDragging, selectedPack, isOpening]);
 
   return (
-    <div className="lottery-container min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="lottery-container flex flex-col items-center relative overflow-hidden">
       {!showPrizeCard ? (
         <>
-          <div className="text-center mb-8">
+          <div className="text-center mb-4"> {/* 減少底部間距 */}
             <h1 className="lottery-title text-4xl font-bold text-white mb-4">
               🎰 選擇一個禮包
             </h1>

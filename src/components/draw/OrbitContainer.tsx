@@ -17,11 +17,6 @@ const OrbitContainer: React.FC<OrbitContainerProps> = ({
   onDragStart,
   onPackClick,
 }) => {
-  // 移除軌道動畫，因為改成平面卡片佈局
-  // const [rotation, setRotation] = useState(0);
-  // const animationRef = useRef<number | null>(null);
-  // const isAnimating = useRef(true);
-
   // 3D 軌道旋轉狀態
   const [rotation, setRotation] = useState(0);
   const animationRef = useRef<number | null>(null);
@@ -39,7 +34,7 @@ const OrbitContainer: React.FC<OrbitContainerProps> = ({
 
     const animate = () => {
       if (isAnimating.current) {
-        setRotation(prev => prev + 0.8); // 調整旋轉速度
+        setRotation(prev => prev + 2); // 增加旋轉速度來測試
       }
       animationRef.current = requestAnimationFrame(animate);
     };

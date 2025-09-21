@@ -40,7 +40,9 @@ export default function LotteryPage() {
       </div>
 
       {/* 抽獎組件 */}
-      <LotteryBox onPrizeWon={handlePrizeWon} />
+      <div className="pt-8"> {/* 大幅減少頂部間距 */}
+        <LotteryBox onPrizeWon={handlePrizeWon} />
+      </div>
     </div>
   );
 }
