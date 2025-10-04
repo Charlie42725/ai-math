@@ -189,35 +189,32 @@ type ChatHistory = {
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim()) return;
     
-    // 使用當前最新的 messages 狀態
-    setMessages(currentMessages => {
-      const newMessages: Message[] = [
-        ...currentMessages,
-        { role: "user", parts: [{ text: messageText }] }
-      ];
+    // 先添加用戶訊息
+    const userMessage: Message = { role: "user", parts: [{ text: messageText }] };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    
+    // 開始載入
+    setLoading(true);
+    
+    try {
+      // 獲取 AI 回應
+      const reply = await askMathAI(messages, messageText);
       
-      // 異步處理 AI 回應
-      (async () => {
-        setLoading(true);
-        try {
-          const reply = await askMathAI(currentMessages, messageText);
-          setMessages(msgs => [
-            ...msgs,
-            { role: "assistant", parts: [{ text: reply }] }
-          ]);
-        } catch (error) {
-          console.error('發送訊息失敗:', error);
-          setMessages(msgs => [
-            ...msgs,
-            { role: "assistant", parts: [{ text: "抱歉，發生錯誤，請稍後再試。" }] }
-          ]);
-        } finally {
-          setLoading(false);
-        }
-      })();
+      // 添加 AI 回應
+      const aiMessage: Message = { role: "assistant", parts: [{ text: reply }] };
+      setMessages([...newMessages, aiMessage]);
       
-      return newMessages;
-    });
+    } catch (error) {
+      console.error('發送訊息失敗:', error);
+      
+      // 添加錯誤訊息
+      const errorMessage: Message = { role: "assistant", parts: [{ text: "抱歉，發生錯誤，請稍後再試。" }] };
+      setMessages([...newMessages, errorMessage]);
+      
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSend = async (e: React.FormEvent) => {

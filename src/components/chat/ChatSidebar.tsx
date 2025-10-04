@@ -138,34 +138,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
     const questionText = flashCardData.question;
     const chatPrompt = `我不懂這個數學觀念：「${questionText}」，請詳細解釋這個概念的原理和應用方式。`;
     
+    // 關閉閃卡
     setShowFlashCard(false);
     
-    // 創建一個新的對話，並自動發送訊息獲得 AI 回應
-    props.setActiveChatId(null); // 清除當前對話ID，創建新對話
-    props.setMessages([]); // 清空訊息
+    // 清除當前對話，開始新對話
+    props.setActiveChatId(null);
+    props.setMessages([]);
     
-    // 如果有 sendMessage 函數，直接發送並獲得回應
+    // 發送訊息並獲得 AI 回應
     if (props.sendMessage) {
-      try {
-        await props.sendMessage(chatPrompt);
-      } catch (error) {
-        console.error('發送訊息失敗:', error);
-        // 如果失敗，回退到原本的方式
-        props.setMessages([
-          { 
-            role: "user", 
-            parts: [{ text: chatPrompt }] 
-          }
-        ]);
-      }
-    } else {
-      // 沒有 sendMessage 函數時，使用原本的方式
-      props.setMessages([
-        { 
-          role: "user", 
-          parts: [{ text: chatPrompt }] 
-        }
-      ]);
+      await props.sendMessage(chatPrompt);
     }
   }
 
