@@ -185,6 +185,41 @@ type ChatHistory = {
   const [image, setImage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null!) as React.RefObject<HTMLInputElement>;
 
+  // 專門用於程式化發送訊息的函數
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
+    
+    // 使用當前最新的 messages 狀態
+    setMessages(currentMessages => {
+      const newMessages: Message[] = [
+        ...currentMessages,
+        { role: "user", parts: [{ text: messageText }] }
+      ];
+      
+      // 異步處理 AI 回應
+      (async () => {
+        setLoading(true);
+        try {
+          const reply = await askMathAI(currentMessages, messageText);
+          setMessages(msgs => [
+            ...msgs,
+            { role: "assistant", parts: [{ text: reply }] }
+          ]);
+        } catch (error) {
+          console.error('發送訊息失敗:', error);
+          setMessages(msgs => [
+            ...msgs,
+            { role: "assistant", parts: [{ text: "抱歉，發生錯誤，請稍後再試。" }] }
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      })();
+      
+      return newMessages;
+    });
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && !image) return;
@@ -345,6 +380,7 @@ type ChatHistory = {
           setChatHistories={setChatHistories}
           loading={loading}
           tags={tags}
+          sendMessage={sendMessage}
         />
       </div>
 
