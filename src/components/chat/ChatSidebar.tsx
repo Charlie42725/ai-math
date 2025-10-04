@@ -41,6 +41,33 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   const [flashCardData, setFlashCardData] = useState<{ question: string; answer: string }>({ question: '', answer: '' });
   const [loadingFlashCard, setLoadingFlashCard] = useState(false);
 
+
+
+  // 生成簡單問題的輔助函數
+  function generateSimpleQuestion(unit?: string, keywords?: string[]): string {
+    if (unit) {
+      const unitQuestions: { [key: string]: string } = {
+        '算式運算': '負數運算的規則？',
+        '立體圖形與展開圖': '展開圖的概念？',
+        '二元一次聯立方程式': '聯立方程式怎麼解？',
+        '坐標平面': '坐標的表示方法？',
+        '一元二次方程式': '二次方程式求解？'
+      };
+      if (unitQuestions[unit]) return unitQuestions[unit];
+    }
+    
+    if (keywords && keywords.length > 0) {
+      const keyword = keywords[0];
+      if (keyword.includes('坐標')) return '坐標的概念？';
+      if (keyword.includes('方程式')) return '方程式的用途？';
+      if (keyword.includes('圖形')) return '圖形的性質？';
+      if (keyword.includes('負數')) return '負數運算規則？';
+      if (keyword.includes('展開')) return '展開圖的用途？';
+    }
+    
+    return '數學觀念練習';
+  }
+
   async function getRandomExamQuestion() {
     const idx = Math.floor(Math.random() * (Array.isArray(examData) ? examData.length : 0));
     const item = Array.isArray(examData) ? examData[idx] : undefined;
@@ -68,9 +95,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
 
       if (response.ok) {
         const conceptData = await response.json();
+        
+        // 使用 AI 轉換的觀念問題
+        const finalQuestion = conceptData.conceptQuestion || generateSimpleQuestion(item.unit, item.keywords);
+        const finalAnswer = conceptData.conceptAnswer || answerText;
+        
         return {
-          question: conceptData.conceptQuestion || item.question,
-          answer: conceptData.conceptAnswer || answerText,
+          question: finalQuestion,
+          answer: finalAnswer,
         };
       }
     } catch (error) {
