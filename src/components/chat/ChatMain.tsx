@@ -128,16 +128,6 @@ const ChatMain: React.FC<ChatMainProps> = ({
     }
   };
 
-  // 練習會考題目功能
-  const handlePracticeExam = () => {
-    if (loading) return;
-    setInput("我要練習會考題目");
-    const fakeEvent = {
-      preventDefault: () => {},
-    } as FormEvent<HTMLFormElement>;
-    handleSend(fakeEvent);
-  };
-
   return (
     <div className="flex-1 flex flex-col h-full min-h-0">
       {/* 對話保存提示 */}
@@ -170,30 +160,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
               </p>
             </div>
             
-            {/* 快速開始按鈕 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-              <button
-                onClick={handlePracticeExam}
-                className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 
-                          border border-indigo-400/30 hover:border-indigo-400/50 
-                          transition-all duration-300 hover:scale-105 group"
-              >
-                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📚</div>
-                <h3 className="font-semibold text-lg mb-2">練習會考題目</h3>
-                <p className="text-slate-400 text-sm">挑戰歷年會考數學題目</p>
-              </button>
-              
-              <button
-                onClick={() => setInput("幫我解釋二次函數")}
-                className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 
-                          border border-emerald-400/30 hover:border-emerald-400/50 
-                          transition-all duration-300 hover:scale-105 group"
-              >
-                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">💡</div>
-                <h3 className="font-semibold text-lg mb-2">概念學習</h3>
-                <p className="text-slate-400 text-sm">深入理解數學概念</p>
-              </button>
-            </div>
+
           </div>
         ) : (
           /* 對話訊息 */
