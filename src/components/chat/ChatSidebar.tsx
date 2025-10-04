@@ -1,4 +1,6 @@
 import React, { FormEvent, ChangeEvent, useState, useEffect, useRef } from "react";
+import FlashCard from "@/components/draw/FlashCard";
+import examData from "@/lib/exam.json";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchChatHistories, groupChatsByDate } from "@/lib/chatHistory";
 import { useRouter } from "next/navigation";
@@ -32,6 +34,88 @@ interface ChatSidebarProps {
 
 const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   const router = useRouter();
+
+  // FlashCard 狀態
+  const [showFlashCard, setShowFlashCard] = useState(false);
+  const [flashCardData, setFlashCardData] = useState<{ question: string; answer: string }>({ question: '', answer: '' });
+  const [loadingFlashCard, setLoadingFlashCard] = useState(false);
+
+  async function getRandomExamQuestion() {
+    const idx = Math.floor(Math.random() * (Array.isArray(examData) ? examData.length : 0));
+    const item = Array.isArray(examData) ? examData[idx] : undefined;
+    if (!item) return { question: '無題目', answer: '無答案' };
+    
+    let answerText = '無答案';
+    if (item.explanation) {
+      answerText = item.explanation;
+    } else if (item.options && typeof item.options === 'object' && item.answer && item.options[item.answer as keyof typeof item.options]) {
+      answerText = item.options[item.answer as keyof typeof item.options];
+    }
+
+    try {
+      // 調用 AI 將題目轉換為觀念題
+      const response = await fetch('/api/convert-to-concept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: item.question,
+          answer: answerText,
+          unit: item.unit,
+          keywords: item.keywords
+        })
+      });
+
+      if (response.ok) {
+        const conceptData = await response.json();
+        return {
+          question: conceptData.conceptQuestion || item.question,
+          answer: conceptData.conceptAnswer || answerText,
+        };
+      }
+    } catch (error) {
+      console.error('AI 轉換失敗，使用原題目:', error);
+    }
+
+    // 如果 AI 轉換失敗，返回原題目
+    return {
+      question: item.question,
+      answer: answerText,
+    };
+  }
+
+  useEffect(() => {
+    if (showFlashCard) {
+      const loadQuestion = async () => {
+        setLoadingFlashCard(true);
+        try {
+          const questionData = await getRandomExamQuestion();
+          setFlashCardData(questionData);
+        } catch (error) {
+          console.error('載入題目失敗:', error);
+          setFlashCardData({ question: '載入失敗', answer: '請重新嘗試' });
+        } finally {
+          setLoadingFlashCard(false);
+        }
+      };
+      loadQuestion();
+    }
+  }, [showFlashCard]);
+
+  function handleDontUnderstand() {
+    const questionText = flashCardData.question;
+    const chatPrompt = `我不懂這個數學觀念：「${questionText}」，請詳細解釋這個概念的原理和應用方式。`;
+    
+    // 創建一個新的對話，並設置初始訊息
+    props.setActiveChatId(null); // 清除當前對話ID，創建新對話
+    props.setMessages([
+      { 
+        role: "user", 
+        parts: [{ text: chatPrompt }] 
+      }
+    ]);
+    
+    setShowFlashCard(false);
+  }
   
   // 搜尋狀態
   const [searchQuery, setSearchQuery] = useState("");
@@ -414,6 +498,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
         >
           📝 會考模擬題
         </button>
+        <button 
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-500/10 to-purple-500/10 
+                     hover:from-violet-500/20 hover:to-purple-500/20 text-violet-400 
+                     font-medium transition-all duration-200 border border-violet-500/20 
+                     hover:border-violet-400/30"
+          onClick={() => setShowFlashCard(true)}
+        >
+          🎴 抽卡練習
+        </button>
+        {showFlashCard && (
+          <FlashCard
+            question={flashCardData.question}
+            answer={flashCardData.answer}
+            onDontUnderstand={handleDontUnderstand}
+            onClose={() => setShowFlashCard(false)}
+            loading={loadingFlashCard}
+          />
+        )}
         <button 
           className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 
                      hover:from-blue-500/20 hover:to-indigo-500/20 text-blue-400 

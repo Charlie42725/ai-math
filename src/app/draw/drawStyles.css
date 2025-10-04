@@ -43,6 +43,11 @@
   transition: transform 0.5s ease-out;
 }
 
+/* 當懸停時軌道暫停效果 */
+.orbit-container.hovering {
+  transition: transform 0.3s ease-out;
+}
+
 /* 卡片樣式 - 3D軌道卡片 */
 .card-pack {
   width: 120px;
