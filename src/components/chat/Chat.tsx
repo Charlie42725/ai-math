@@ -6,7 +6,6 @@ import { deduplicateChatHistories, isDuplicateConversation, cleanupOldDuplicateR
 import ChatSidebar from "./ChatSidebar";
 import ChatTopbar from "./ChatTopbar";
 import ChatMain from "./ChatMain";
-import { askMathAI } from "@/hooks/useMathAI";
 
 interface ChatProps {
   initialChatId?: string;
@@ -198,8 +197,14 @@ type ChatHistory = {
     setLoading(true);
     
     try {
-      // 獲取 AI 回應
-      const reply = await askMathAI(messages, messageText);
+      // 獲取 AI 回應 - 直接呼叫 /api/gemini，不再使用 useMathAI 以避免跳出會考題目
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [...messages, { role: "user", parts: [{ text: messageText }] }] })
+      });
+      const data = await res.json();
+      const reply = data.result || "抱歉，我無法理解您的問題。";
       
       // 添加 AI 回應
       const aiMessage: Message = { role: "assistant", parts: [{ text: reply }] };
@@ -243,7 +248,14 @@ type ChatHistory = {
         const data = await res.json();
         reply = data.result;
       } else {
-        reply = await askMathAI(messages, input);
+        // 直接呼叫 /api/gemini，不再使用 useMathAI 以避免跳出會考題目
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [...messages, { role: "user", parts: [{ text: input }] }] })
+        });
+        const data = await res.json();
+        reply = data.result || "抱歉，我無法理解您的問題。";
       }
       const allMessages: Message[] = [
         ...newMessages,
