@@ -316,7 +316,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
         >
           <div className="flex items-center justify-between">
             <span className="text-white font-medium truncate mr-2">
-              {chat.title || "New Conversation"}
+              {chat.title || "新對話"}
             </span>
             <button
               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-slate-600/50 
@@ -333,7 +333,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
           {/* 對話預覽 */}
           {chat.messages && chat.messages.length > 0 && (
             <p className="text-slate-400 text-sm mt-1 truncate">
-              {chat.messages[chat.messages.length - 1]?.parts?.[0]?.text || "No messages"}
+              {chat.messages[chat.messages.length - 1]?.parts?.[0]?.text || "無訊息"}
             </p>
           )}
           
@@ -418,7 +418,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             className="w-full px-4 py-2.5 pr-10 rounded-xl bg-slate-700/50 text-white placeholder:text-slate-400 
                        focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all duration-200
                        border border-slate-600/50 hover:border-slate-500/50"
-            placeholder="🔍 Search conversations..."
+            placeholder="🔍 搜尋對話紀錄..."
             value={searchQuery}
             onChange={handleSearchChange}
           />
@@ -448,7 +448,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             {showSearchResults ? (
               searchResults.length > 0 ? `搜尋結果 (${searchResults.length})` : "找不到符合的對話"
             ) : (
-              "Recent Chats"
+              "最近對話"
             )}
           </div>
           {props.user && !showSearchResults && (

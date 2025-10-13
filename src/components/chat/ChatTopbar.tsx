@@ -14,8 +14,8 @@ const ChatTopbar: React.FC<ChatTopbarProps> = ({ user, onLogout }) => {
           <span className="text-sm">🤖</span>
         </div>
         <div>
-          <h2 className="font-semibold text-white">AI Math Assistant</h2>
-          <p className="text-slate-400 text-sm">Ready to help with your math questions</p>
+          <h2 className="font-semibold text-white">AI 數學助理</h2>
+          <p className="text-slate-400 text-sm">準備好幫助您解決數學問題</p>
         </div>
       </div>
 

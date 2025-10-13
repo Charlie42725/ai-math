@@ -13,15 +13,15 @@ interface ChatProps {
 
 export default function Chat({ initialChatId }: ChatProps = {}) {
 const tags = [
-  "Chat with AI Characters!",
-  "AI Text Generator",
-  "Math AI",
-  "AI Poem Generator",
-  "AI Storyteller",
-  "ChatGPT Alternative",
-  "GPT Chat",
-  "AI Code",
-  "More",
+  "與 AI 角色對話！",
+  "AI 文字生成器",
+  "數學 AI",
+  "AI 詩詞生成器",
+  "AI 故事創作者",
+  "ChatGPT 替代方案",
+  "GPT 聊天",
+  "AI 程式碼",
+  "更多功能",
 ];
 
 // 型別定義
@@ -335,7 +335,7 @@ type ChatHistory = {
     } catch {
       setMessages([
         ...newMessages,
-        { role: "assistant", parts: [{ text: "[Error] 無法取得回應" }] }
+        { role: "assistant", parts: [{ text: "[錯誤] 無法取得回應" }] }
       ]);
     } finally {
       setLoading(false);

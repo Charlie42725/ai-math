@@ -195,7 +195,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
                         {part.image && (
                           <img 
                             src={part.image} 
-                            alt="User uploaded" 
+                            alt="使用者上傳的圖片" 
                             className="max-w-64 rounded-lg mb-2 border border-slate-600/50" 
                           />
                         )}
@@ -241,7 +241,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
           {/* 圖片預覽 */}
           {image && (
             <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-xl border border-slate-600/50">
-              <img src={image} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
+              <img src={image} alt="圖片預覽" className="w-16 h-16 object-cover rounded-lg" />
               <span className="text-slate-300 text-sm">圖片已準備上傳</span>
               <button
                 type="button"
