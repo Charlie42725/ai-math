@@ -357,7 +357,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               props.setMenuOpenId(null);
             }}
           >
-            ✏️ Rename
+            ✏️ 重新命名
           </button>
           <button
             className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
@@ -383,7 +383,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               props.setMenuOpenId(null);
             }}
           >
-            🗑️ Delete
+            🗑️ 刪除
           </button>
         </div>
       )}
@@ -408,7 +408,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             <span className="text-xl">💬</span>
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            Chat History
+            歷史紀錄
           </span>
         </div>
         
@@ -486,7 +486,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
                 }
               }}
             >
-              {isCreatingNewChat ? "準備中..." : "✨ New Chat"}
+              {isCreatingNewChat ? "準備中..." : "✨ 新對話"}
             </button>
           )}
         </div>
@@ -527,8 +527,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
                 <span className="text-2xl">💭</span>
               </div>
-              <p className="text-slate-400 mb-2">No conversations yet</p>
-              <p className="text-slate-500 text-sm">Start a new chat to begin!</p>
+              <p className="text-slate-400 mb-2">還沒有對話紀錄</p>
+              <p className="text-slate-500 text-sm">開始新對話吧！</p>
             </div>
           )
         )}
