@@ -1,5 +1,5 @@
 import React, { FormEvent, ChangeEvent, useState, useEffect, useRef } from "react";
-import FlashCard from "@/components/draw/FlashCard";
+import FlashCard from "@/components/flashcard/FlashCard";
 import examData from "@/lib/exam.json";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchChatHistories, groupChatsByDate } from "@/lib/chatHistory";
@@ -562,6 +562,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             onClose={() => setShowFlashCard(false)}
             onRestart={handleRestart}
             loading={loadingFlashCard}
+            showAsModal={true}
           />
         )}
         <button 

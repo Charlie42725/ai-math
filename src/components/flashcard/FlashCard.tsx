@@ -7,13 +7,26 @@ interface FlashCardProps {
   onClose: () => void;
   onRestart: () => void;
   loading?: boolean;
+  showAsModal?: boolean;
 }
 
-const FlashCard: React.FC<FlashCardProps> = ({ question, answer, onDontUnderstand, onClose, onRestart, loading = false }) => {
+const FlashCard: React.FC<FlashCardProps> = ({
+  question,
+  answer,
+  onDontUnderstand,
+  onClose,
+  onRestart,
+  loading = false,
+  showAsModal = false
+}) => {
   const [flipped, setFlipped] = useState(false);
 
+  const containerClasses = showAsModal
+    ? "fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    : "flex items-center justify-center";
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className={containerClasses}>
       <style jsx>{`
         .flip-card {
           perspective: 1000px;
@@ -33,21 +46,23 @@ const FlashCard: React.FC<FlashCardProps> = ({ question, answer, onDontUnderstan
           transform: rotateY(180deg);
         }
       `}</style>
-      
-      <div className="w-80 h-96 flip-card">
+
+      <div className="w-full max-w-md h-96 flip-card">
         <div className={`relative w-full h-full flip-card-inner ${flipped ? 'flipped' : ''}`}>
           {/* 正面 - 問題 */}
           <div className="absolute inset-0 w-full h-full bg-white rounded-xl shadow-2xl flip-card-front flex flex-col overflow-hidden">
-            {/* 關閉按鈕 */}
-            <button
-              className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10"
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                onClose();
-              }}
-            >
-              ✕
-            </button>
+            {/* 關閉按鈕 - 只在 modal 模式顯示 */}
+            {showAsModal && (
+              <button
+                className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+              >
+                ✕
+              </button>
+            )}
 
             {/* 卡片內容 */}
             <div
@@ -106,16 +121,18 @@ const FlashCard: React.FC<FlashCardProps> = ({ question, answer, onDontUnderstan
 
           {/* 背面 - 答案 */}
           <div className="absolute inset-0 w-full h-full bg-white rounded-xl shadow-2xl flip-card-back flex flex-col overflow-hidden">
-            {/* 關閉按鈕 */}
-            <button
-              className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10"
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                onClose();
-              }}
-            >
-              ✕
-            </button>
+            {/* 關閉按鈕 - 只在 modal 模式顯示 */}
+            {showAsModal && (
+              <button
+                className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+              >
+                ✕
+              </button>
+            )}
 
             {/* 答案內容 */}
             <div
