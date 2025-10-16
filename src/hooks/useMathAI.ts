@@ -79,6 +79,7 @@ ${detailText}
 
   const finalMessages = [
     { role: "user", parts: [{ text: primerText }] },
+    { role: "assistant", parts: [{ text: "我明白了，我會以溫暖的數學老師身份，用引導式問答來幫助你學習數學。請告訴我你的數學問題吧！" }] },
     ...messages,
     { role: "user", parts: [{ text: userInput }] }
   ];

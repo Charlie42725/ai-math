@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/c/Users/linei/Desktop/coding/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
