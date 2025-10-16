@@ -27,8 +27,8 @@ export async function extractUserMessages(): Promise<ExtractedMsg[]> {
   const results: ExtractedMsg[] = [];
 
   for (const conv of conversations) {
-    const msgs: any[] = Array.isArray(conv.messages) ? conv.messages : [];
-    msgs.forEach((msg: any, index: number) => {
+    const msgs: Array<{ role?: string; parts?: Array<{ text?: string }>; timestamp?: string }> = Array.isArray(conv.messages) ? conv.messages : [];
+    msgs.forEach((msg, index: number) => {
       const role = msg?.role;
       const text = msg?.parts?.[0]?.text ?? '';
       if (role === 'user' && text.trim().length > 0) {

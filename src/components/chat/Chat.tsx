@@ -220,7 +220,7 @@ type ChatHistory = {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && !image) return;
-    let newParts: { text?: string; image?: string }[] = [];
+    const newParts: { text?: string; image?: string }[] = [];
     if (input.trim()) newParts.push({ text: input });
     if (image) newParts.push({ image });
     const newMessages: Message[] = [

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read(//mnt/c/Users/linei/Desktop/coding/**)"
+      "Read(//mnt/c/Users/linei/Desktop/coding/**)",
+      "Bash(npm run build:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
