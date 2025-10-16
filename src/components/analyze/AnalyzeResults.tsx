@@ -59,48 +59,91 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
   return (
     <div className="h-full flex flex-col">
       {/* 頂部標題區 */}
-      <div className="p-6 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
-            <span className="text-xl">🎮</span>
-          </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            學習卡片儀表板
-          </span>
-        </div>
+      <div className="relative overflow-hidden">
+        {/* 背景裝飾 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-slate-800/30 to-pink-900/20"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-pink-500/10 to-transparent rounded-full blur-2xl"></div>
         
-        <div className="flex items-center gap-4">
-          <button
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 
-                       hover:from-purple-600 hover:to-pink-700 text-white font-semibold 
-                       transition-all duration-200 shadow-md hover:shadow-lg 
-                       disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleAnalyze}
-            disabled={analyzing || loading}
-          >
-            {analyzing ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                分析中...
+        {/* 內容 */}
+        <div className="relative p-8 border-b border-slate-700/30 backdrop-blur-sm">
+          {/* 標題部分 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-xl">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-full shadow-md animate-pulse"></div>
               </div>
-            ) : (
-              "🎮 開始分析"
-            )}
-          </button>
-          
-          {loading && (
-            <div className="flex items-center gap-2 text-slate-400">
-              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-              載入分析結果中...
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-300 bg-clip-text text-transparent">
+                  AI 學習分析報表
+                </h1>
+                <p className="text-slate-400 mt-1 text-sm">
+                  深度分析您的數學學習狀況並提供個人化建議
+                </p>
+              </div>
             </div>
-          )}
-          
-          {error && (
-            <div className="flex items-center gap-2 text-red-400">
-              <span>⚠️</span>
-              {error}
+            
+            {/* 統計卡片 */}
+            <div className="flex gap-3">
+              <div className="px-4 py-2 rounded-xl bg-slate-800/40 border border-slate-700/50 backdrop-blur-sm">
+                <div className="text-xs text-slate-400 mb-1">總分析次數</div>
+                <div className="text-lg font-semibold text-white">{data.length}</div>
+              </div>
+              <div className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm">
+                <div className="text-xs text-purple-300 mb-1">活躍狀態</div>
+                <div className="text-lg font-semibold text-purple-200">🟢 線上</div>
+              </div>
             </div>
-          )}
+          </div>
+          
+          {/* 操作按鈕區 */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <button
+              className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 
+                         hover:from-purple-600 hover:via-pink-600 hover:to-purple-700 
+                         text-white font-bold transition-all duration-300 
+                         shadow-xl hover:shadow-2xl hover:shadow-purple-500/25
+                         transform hover:-translate-y-0.5 hover:scale-105
+                         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                         border border-white/10"
+              onClick={handleAnalyze}
+              disabled={analyzing || loading}
+            >
+              {analyzing ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span className="bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+                    AI 分析中...
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-xl group-hover:animate-bounce">🚀</span>
+                  <span>開始 AI 分析</span>
+                </div>
+              )}
+            </button>
+            
+            {/* 狀態指示器 */}
+            <div className="flex items-center gap-4">
+              {loading && (
+                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300">
+                  <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium">載入分析結果中...</span>
+                </div>
+              )}
+              
+              {error && (
+                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300">
+                  <span className="text-lg animate-pulse">⚠️</span>
+                  <span className="text-sm font-medium">{error}</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
