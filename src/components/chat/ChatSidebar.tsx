@@ -1,16 +1,11 @@
 import React, { FormEvent, ChangeEvent, useState, useEffect, useRef } from "react";
 import FlashCard from "@/components/flashcard/FlashCard";
-import examData from "@/lib/exam.json";
+import { useExam } from "@/contexts/ExamContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchChatHistories, groupChatsByDate } from "@/lib/chatHistory";
 import { useRouter } from "next/navigation";
+import { ChatHistory } from "@/types";
 
-type ChatHistory = {
-  id: string;
-  title: string;
-  messages: any[];
-  created_at?: string;
-};
 
 interface ChatSidebarProps {
   user: { id: string } | null;
@@ -35,6 +30,7 @@ interface ChatSidebarProps {
 
 const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   const router = useRouter();
+  const { getRandomQuestion } = useExam();
 
   // FlashCard 狀態
   const [showFlashCard, setShowFlashCard] = useState(false);
@@ -69,8 +65,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   }
 
   async function getRandomExamQuestion() {
-    const idx = Math.floor(Math.random() * (Array.isArray(examData) ? examData.length : 0));
-    const item = Array.isArray(examData) ? examData[idx] : undefined;
+    const item = getRandomQuestion();
     if (!item) return { question: '無題目', answer: '無答案' };
     
     let answerText = '無答案';
