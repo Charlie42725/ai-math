@@ -270,6 +270,42 @@ interface Message {
   → 重置按鈕返回初始狀態
 ```
 
+## 認證系統
+
+### 1. 電子郵件 / 密碼註冊與登入
+
+**註冊功能** (`/src/components/auth/Signup.tsx`):
+- 完整的密碼強度驗證（至少 8 字元、大小寫字母、數字）
+- 即時密碼強度指示器（弱/中等/強）
+- 密碼確認欄位防止輸入錯誤
+- 檢測重複電子郵件註冊
+- 支援郵件驗證流程
+- 成功後自動跳轉到登入頁面
+
+**登入功能** (`/src/components/auth/Login.tsx`):
+- 使用 Supabase Auth 的 `signInWithPassword`
+- 錯誤處理和使用者回饋
+- 登入成功後跳轉到 `/chat` 頁面
+
+### 2. OAuth 第三方登入
+
+專案支援三種 OAuth 提供商：
+- **Google** - 使用 `google` provider
+- **Microsoft (Azure AD)** - 使用 `azure` provider
+- **Apple** - 使用 `apple` provider
+
+**實作方式**:
+- 使用 Supabase 的 `signInWithOAuth` API
+- 自動重新導向到 `/chat` 頁面
+- 統一的錯誤處理機制
+
+**設定步驟**:
+詳細的 OAuth 設定指南請參閱 `OAUTH_SETUP.md` 檔案，包含：
+1. Google Cloud Console 設定
+2. Azure AD 應用程式註冊
+3. Apple Developer 設定
+4. Supabase Provider 配置
+
 ## 環境變數
 
 必要的環境變數（在 `.env.local` 中設定）：
@@ -279,6 +315,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_public_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 GEMINI_API_KEY=your_gemini_api_key
 ```
+
+**注意**: OAuth 憑證直接在 Supabase Dashboard 中設定，不需要在環境變數中配置。
 
 ## 技術棧
 

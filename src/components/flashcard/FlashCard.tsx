@@ -67,8 +67,8 @@ const FlashCard: React.FC<FlashCardProps> = ({
             {/* 卡片內容 */}
             <div
               className={`flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 p-8 ${
-                loading 
-                  ? 'bg-gradient-to-br from-gray-50 to-gray-100' 
+                loading
+                  ? 'bg-gradient-to-br from-gray-50 to-gray-100'
                   : 'bg-gradient-to-br from-violet-50 to-purple-50'
               }`}
               onClick={() => !loading && setFlipped(true)}
@@ -100,21 +100,15 @@ const FlashCard: React.FC<FlashCardProps> = ({
             </div>
 
             {/* 底部按鈕區域 */}
-            <div className="p-4 bg-gray-50 border-t flex justify-between items-center">
+            <div className="p-4 bg-gray-50 border-t flex justify-center items-center">
               <button
-                className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-lg shadow hover:from-violet-600 hover:to-purple-700 transition-all duration-200 font-medium"
-                onClick={onDontUnderstand}
-              >
-                🤔 不懂，問AI
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 onClick={() => {
                   setFlipped(false);
                   onRestart();
                 }}
               >
-                🔄 重新開始
+                🔄 換一題
               </button>
             </div>
           </div>
@@ -151,21 +145,21 @@ const FlashCard: React.FC<FlashCardProps> = ({
             </div>
 
             {/* 底部按鈕區域 */}
-            <div className="p-4 bg-gray-50 border-t flex justify-between items-center">
+            <div className="p-4 bg-gray-50 border-t flex justify-between items-center gap-3">
               <button
-                className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-lg shadow hover:from-violet-600 hover:to-purple-700 transition-all duration-200 font-medium"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-lg shadow hover:from-violet-600 hover:to-purple-700 transition-all duration-200 font-medium"
                 onClick={onDontUnderstand}
               >
                 🤔 不懂，問AI
               </button>
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 onClick={() => {
                   setFlipped(false);
                   onRestart();
                 }}
               >
-                🔄 重新開始
+                🔄 換一題
               </button>
             </div>
           </div>

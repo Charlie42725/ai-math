@@ -272,7 +272,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="輸入你的數學問題... (Enter 送出，Shift+Enter 換行)"
+                placeholder="輸入你的數學問題"
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
                           focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
                           border border-slate-200 hover:border-slate-300 resize-none
