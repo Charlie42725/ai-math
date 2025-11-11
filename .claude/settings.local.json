@@ -6,7 +6,8 @@
       "Bash(npm install)",
       "Bash(cat:*)",
       "Bash(python3:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

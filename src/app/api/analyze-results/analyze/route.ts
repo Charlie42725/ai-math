@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const MODEL = "gemini-1.5-pro";
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: NextRequest) {
   try {
     console.log('Starting analysis...');
-    
+
     // 檢查必要的環境變數
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
       throw new Error('缺少 SUPABASE_URL 環境變數');
@@ -22,6 +15,12 @@ export async function POST(req: NextRequest) {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('缺少 GEMINI_API_KEY 環境變數');
     }
+
+    // Create Supabase client at runtime, not at module load time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     // 1. 取得所有 user 訊息
     const { data: conversations, error } = await supabase
