@@ -6,12 +6,13 @@ import QuestionCardSimple from './QuestionCardSimple';
 import FooterControls from './FooterControls';
 import Timer from './Timer';
 import EnhancedAnalysisSidebar from './EnhancedAnalysisSidebar';
-import { 
-  getRandomQuestions, 
-  getMixedQuestions, 
-  getQuestionsByGrade, 
+import {
+  getRandomQuestions,
+  getMixedQuestions,
+  getQuestionsByGrade,
   getQuestionsByUnit,
-  FormattedQuestion 
+  FormattedQuestion,
+  QuestionSource
 } from '@/test/questionBank';
 
 interface Question {
@@ -56,6 +57,7 @@ interface ExamSettingsData {
   mode: 'random' | 'grade' | 'unit' | 'mixed';
   selectedGrade?: string;
   selectedUnit?: string;
+  questionSource?: QuestionSource;
 }
 
 const PracticePageMinimal = ({ questions }: PracticePageProps) => {
@@ -81,30 +83,31 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   // 開始考試
   const handleStartExam = (questionCount: number, settings?: ExamSettingsData) => {
     let selected: FormattedQuestion[] = [];
-    
+    const source: QuestionSource = settings?.questionSource || 'historical';
+
     try {
       if (settings) {
         switch (settings.mode) {
           case 'random':
-            selected = getRandomQuestions(questionCount);
+            selected = getRandomQuestions(questionCount, source);
             break;
           case 'grade':
             if (settings.selectedGrade) {
-              selected = getQuestionsByGrade(settings.selectedGrade, questionCount);
+              selected = getQuestionsByGrade(settings.selectedGrade, questionCount, source);
             } else {
-              selected = getRandomQuestions(questionCount);
+              selected = getRandomQuestions(questionCount, source);
             }
             break;
           case 'unit':
             if (settings.selectedUnit) {
-              selected = getQuestionsByUnit(settings.selectedUnit, questionCount);
+              selected = getQuestionsByUnit(settings.selectedUnit, questionCount, source);
             } else {
-              selected = getRandomQuestions(questionCount);
+              selected = getRandomQuestions(questionCount, source);
             }
             break;
           case 'mixed':
           default:
-            selected = getMixedQuestions(questionCount);
+            selected = getMixedQuestions(questionCount, source);
             break;
         }
       } else {
@@ -112,16 +115,16 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
         const shuffled = [...questions].sort(() => Math.random() - 0.5);
         selected = shuffled.slice(0, questionCount) as FormattedQuestion[];
       }
-      
+
       // 如果選到的題目不足，補足剩餘的題目
       if (selected.length < questionCount) {
-        const additional = getRandomQuestions(questionCount - selected.length);
+        const additional = getRandomQuestions(questionCount - selected.length, source);
         selected = [...selected, ...additional];
       }
     } catch (error) {
       console.error('選取題目時出錯:', error);
       // 錯誤時使用隨機選題作為後備方案
-      selected = getRandomQuestions(questionCount);
+      selected = getRandomQuestions(questionCount, source);
     }
     
     setSelectedQuestions(selected as Question[]);
@@ -337,19 +340,19 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     const maxScore = selectedQuestions.reduce((sum, q) => sum + q.points, 0);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
+      <div className="min-h-screen bg-slate-100 text-gray-800 p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">考試結果</h1>
-            <div className="bg-slate-800 rounded-lg p-8 mb-6">
-              <div className="text-4xl font-bold mb-2">{totalScore}/{maxScore}</div>
-              <div className="text-xl text-slate-300">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">考試結果</h1>
+            <div className="bg-white rounded-lg p-6 md:p-8 mb-6 shadow-sm border border-slate-200">
+              <div className="text-3xl md:text-4xl font-bold mb-2">{totalScore}/{maxScore}</div>
+              <div className="text-lg md:text-xl text-gray-600">
                 得分率: {((totalScore / maxScore) * 100).toFixed(1)}%
               </div>
             </div>
             <button
               onClick={handleRestart}
-              className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold transition-colors"
+              className="bg-slate-700 hover:bg-slate-800 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm"
             >
               重新開始
             </button>
@@ -363,43 +366,44 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const currentAnswer = answers.find(a => a.questionId === currentQuestionData?.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pb-20">
+    <div className="min-h-screen bg-slate-100 text-gray-800 pb-20">
       {/* 頂部計時器和進度 */}
-      <div className="sticky top-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-700 p-4 z-10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div className="text-sm text-slate-300">
+      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 p-3 md:p-4 z-10 shadow-sm">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+          <div className="text-sm text-gray-600 font-medium">
             第 {currentQuestion + 1} 題 / 共 {selectedQuestions.length} 題
           </div>
-          
-          <div className="flex items-center space-x-4">
+
+          <div className="flex items-center space-x-2 md:space-x-4 w-full sm:w-auto justify-between sm:justify-start">
             {/* AI 分析結果按鈕 */}
             {currentQuestionResult && (
               <button
                 onClick={() => setSidebarVisible(!sidebarVisible)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg ${
-                  sidebarVisible 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-blue-500/25' 
-                    : 'bg-slate-700/70 text-slate-300 hover:bg-slate-600/70 border border-slate-600/50 hover:border-blue-400/50'
+                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 flex items-center space-x-1 md:space-x-2 shadow-sm ${
+                  sidebarVisible
+                    ? 'bg-slate-700 text-white shadow-slate-300'
+                    : 'bg-slate-100 text-gray-700 hover:bg-slate-200 border border-slate-200 hover:border-slate-300'
                 }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                <span>🤖 AI 分析</span>
+                <span className="hidden sm:inline">🤖 AI 分析</span>
+                <span className="sm:hidden">AI</span>
                 {!sidebarVisible && (
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 )}
               </button>
             )}
-            
+
             <Timer timeRemaining={timeRemaining} />
           </div>
         </div>
       </div>
 
       {/* 主要內容區域 */}
-      <div className={`transition-all duration-300 ${sidebarVisible ? 'pr-6' : ''}`}>
-        <div className={`p-6 ${sidebarVisible ? 'max-w-none w-1/2' : 'max-w-4xl mx-auto'} transition-all duration-300`}>
+      <div className={`transition-all duration-300 ${sidebarVisible ? 'lg:pr-6' : ''}`}>
+        <div className={`p-4 md:p-6 ${sidebarVisible ? 'max-w-4xl mx-auto lg:max-w-none lg:w-1/2' : 'max-w-4xl mx-auto'} transition-all duration-300`}>
           {currentQuestionData && (
             <QuestionCardSimple
               question={currentQuestionData}

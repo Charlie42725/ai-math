@@ -41,7 +41,24 @@ npm run lint
    - `analyzeMessages()` - 學習模式分析
 3. 每一層在基礎 AI 上添加特定領域邏輯
 
-### 2. 資料持久化 (Supabase)
+### 2. API 路由層
+
+專案使用 Next.js App Router 的 Route Handlers，所有 API 端點位於 `/src/app/api/`：
+
+**核心 API 端點**:
+- `/api/gemini` - Gemini AI 代理層（詳見第 1 節）
+- `/api/analyze-answer` - 評估學生答案正確性與回饋
+- `/api/analyze-results/analyze` - 分析對話訊息並提取學習概念
+- `/api/analyze-results` - 取得使用者的學習分析結果
+- `/api/convert-to-concept` - 將文字轉換為課綱概念
+- `/api/generate-flashcard` - 根據概念生成閃卡內容
+
+**API 安全配置**:
+- Gemini API 包含內容安全過濾（`HARM_CATEGORY_HARASSMENT`, `HARM_CATEGORY_HATE_SPEECH`）
+- 門檻設為 `BLOCK_MEDIUM_AND_ABOVE`
+- 溫度參數設為 0.7，平衡創意與準確性
+
+### 3. 資料持久化 (Supabase)
 
 **配置**: `/src/lib/supabase.ts`
 - Client-side: 使用 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -64,7 +81,14 @@ npm run lint
 - `isDuplicateConversation()` 檢測重複
 - `cleanupOldDuplicateRecords()` 清理舊記錄
 
-### 3. 課綱驅動的題庫系統
+### 4. 課綱驅動的題庫系統
+
+**React Context 架構** (`/src/contexts/ExamContext.tsx`):
+- `ExamProvider` 提供全域題庫存取
+- 使用 `useMemo` 優化效能，避免重複載入 JSON
+- 提供方法：`getQuestionById()`, `getQuestionsByGrade()`, `getQuestionsByUnit()`, `getRandomQuestion()`
+
+### 5. 課綱驅動的題庫系統（靜態資料）
 
 **靜態資料架構**:
 - `/src/lib/curriculum.json`: 課綱結構（年級 → 單元 → 主題/關鍵字）
@@ -87,7 +111,7 @@ getQuestionsByKeywords(keywords)    // 按關鍵字篩選
   - 使用正則表達式分類數學領域（幾何、代數、函數等）
   - 確保 AI 回傳的概念能對應到課綱
 
-### 4. 測驗系統流程
+### 6. 測驗系統流程
 
 **三階段狀態機** (`/src/components/test/PracticePageMinimal.tsx`):
 1. **設定階段**: 選擇模式（隨機/按年級/按單元）與題數
@@ -108,7 +132,7 @@ getQuestionsByKeywords(keywords)    // 按關鍵字篩選
 - 可展開/收合各區塊
 - 顯示使用者答案 vs 正確答案對比
 
-### 5. 學習分析系統
+### 7. 學習分析系統
 
 **分析 API** (`/src/app/api/analyze-results/analyze/route.ts`):
 - 輸入：`{ user_id, conversation_id, message_index, text }`
@@ -132,7 +156,7 @@ getQuestionsByKeywords(keywords)    // 按關鍵字篩選
 - 使用 Recharts 視覺化概念掌握度
 - 組件：`ConceptChart`, `UnstableChart`, `FeedbackList`, `ProgressBar`, `LearningBadge`
 
-### 6. 聊天系統
+### 8. 聊天系統
 
 **訊息格式**:
 ```typescript
@@ -159,6 +183,30 @@ interface Message {
 - `ChatMain.tsx`: 訊息顯示區、輸入欄位、圖片上傳
 - `ChatTopbar.tsx`: 頂部工具列
 
+### 9. 抽卡系統（Gacha/Lottery）
+
+**頁面**: `/src/app/draw/page.tsx`
+
+**核心組件** (`/src/components/draw/`):
+- `LotteryBox.tsx`: 主控制器，管理抽卡狀態機
+  - 狀態：選擇禮包 → 拖曳/點擊開啟 → 爆炸特效 → 顯示獎品
+  - 支援觸控與滑鼠拖曳（拖曳超過 150px 觸發開啟）
+- `OrbitContainer.tsx`: 軌道動畫容器，禮包環繞中心旋轉
+- `PrizeCard.tsx`: 獎品卡片翻轉動畫
+- `ExplosionEffect.tsx`: 粒子爆炸特效
+- `utils.ts`: 獎品機率計算與隨機選取
+
+**樣式架構**:
+- `drawStyles.css`: 基礎樣式與漸變背景
+- `drawAnimations.css`: 關鍵幀動畫（軌道旋轉、卡片翻轉、粒子爆炸）
+- `test-orbit.css`: 軌道測試樣式
+
+**技術特點**:
+- 使用 `useRef` 追蹤拖曳起始位置
+- `useEffect` 動態綁定/解綁全域事件監聽器（`mousemove`, `touchmove`）
+- 純 CSS 動畫實現軌道系統，無需額外動畫庫
+- 狀態機模式確保開啟流程不會被重複觸發
+
 ## 重要架構決策
 
 1. **靜態題庫載入**: 題目以 JSON 檔案形式載入，客戶端篩選。優點：快速篩選，不佔用資料庫資源。
@@ -172,6 +220,10 @@ interface Message {
 5. **去重層**: 處理聊天創建的競態條件，防止重複對話出現。
 
 6. **概念映射抽象**: 標準化 AI 回應到課綱單元，處理同義詞與變體。
+
+7. **Context 驅動的題庫**: 使用 React Context (`ExamProvider`) 提供全域題庫存取，避免 prop drilling。
+
+8. **遊戲化學習**: 抽卡系統使用純 CSS 動畫與狀態機模式，提供流暢的互動體驗。
 
 ## 資料流程圖
 
@@ -207,6 +259,17 @@ interface Message {
   → 儀表板聚合與視覺化
 ```
 
+### 抽卡流程
+```
+選擇禮包
+  → 點擊或向上拖曳
+  → 檢查拖曳距離 (>150px)
+  → 觸發爆炸特效
+  → utils.getRandomPrize() 隨機選獎
+  → 顯示獎品卡片（翻轉動畫）
+  → 重置按鈕返回初始狀態
+```
+
 ## 環境變數
 
 必要的環境變數（在 `.env.local` 中設定）：
@@ -240,3 +303,7 @@ GEMINI_API_KEY=your_gemini_api_key
 5. **認證狀態**: 聊天與分析功能需要使用者登入，使用 Supabase Auth 檢查。
 
 6. **Debouncing**: 側邊欄重新整理使用 300ms 防抖，平衡響應性與效能。
+
+7. **事件監聽器清理**: 使用 `useEffect` 返回清理函數，避免記憶體洩漏（例如抽卡系統的拖曳事件）。
+
+8. **狀態機模式**: 抽卡與測驗系統使用明確的狀態轉換，防止非法操作（例如重複開啟禮包）。

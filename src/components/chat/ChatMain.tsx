@@ -13,7 +13,7 @@ function renderWithImage(text: string) {
       if (part.startsWith('**') && part.endsWith('**')) {
         // 移除 ** 標記並套用粗體樣式
         const boldText = part.slice(2, -2);
-        return <strong key={index} className="font-bold text-indigo-200">{boldText}</strong>;
+        return <strong key={index} className="font-bold text-gray-900 dark:text-gray-100">{boldText}</strong>;
       }
       return <span key={index} style={{ whiteSpace: 'pre-line' }}>{part}</span>;
     });
@@ -132,63 +132,63 @@ const ChatMain: React.FC<ChatMainProps> = ({
     <div className="flex-1 flex flex-col h-full min-h-0">
       {/* 對話保存提示 */}
       {newChatSaved && (
-        <div className="mx-6 mt-4 p-3 bg-green-500/20 border border-green-400/50 rounded-lg flex items-center gap-3">
+        <div className="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
           <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
             <span className="text-white text-sm">✓</span>
           </div>
           <div className="flex-1">
-            <p className="text-green-200 text-sm font-medium">對話已保存</p>
-            <p className="text-green-300/70 text-xs">繼續聊天，稍後會出現在左側歷史中</p>
+            <p className="text-green-700 text-sm font-medium">對話已保存</p>
+            <p className="text-green-600 text-xs">繼續聊天，稍後會出現在左側歷史中</p>
           </div>
         </div>
       )}
       
       {/* 訊息顯示區 - 固定高度，可滾動 */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 custom-scrollbar">
         {messages.length === 0 ? (
           /* 歡迎畫面 */
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl">
-              <span className="text-4xl">🧮</span>
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8 px-4">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-200 flex items-center justify-center shadow-sm">
+              <span className="text-3xl md:text-4xl">🧮</span>
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-4">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-700 mb-3 md:mb-4">
                 AI Math Assistant
               </h1>
-              <p className="text-slate-400 text-lg mb-8 max-w-md">
+              <p className="text-gray-500 text-base md:text-lg mb-6 md:mb-8 max-w-md px-4">
                 你的專屬數學學習夥伴，準備好開始探索數學的奧秘了嗎？
               </p>
             </div>
-            
+
 
           </div>
         ) : (
           /* 對話訊息 */
           <>
             {messages.map((message, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
                   message.role === 'user' ? 'animate-slide-in-right' : 'animate-slide-in-left'
                 }`}
               >
-                <div className={`flex max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
+                <div className={`flex max-w-[90%] md:max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2 md:gap-3`}>
                   {/* 頭像 */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg ${
-                    message.role === 'user' 
-                      ? 'bg-gradient-to-br from-indigo-500 to-purple-600' 
-                      : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
+                    message.role === 'user'
+                      ? 'bg-slate-300'
+                      : 'bg-slate-200'
                   }`}>
-                    <span className="text-lg">
+                    <span className="text-base md:text-lg">
                       {message.role === 'user' ? '👤' : '🤖'}
                     </span>
                   </div>
 
                   {/* 訊息氣泡 */}
-                  <div className={`rounded-2xl px-4 py-3 shadow-lg ${
+                  <div className={`rounded-2xl px-3 md:px-4 py-2 md:py-3 shadow-sm text-sm md:text-base ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white'
-                      : 'bg-slate-700/50 text-white border border-slate-600/50'
+                      ? 'bg-slate-300 text-gray-800'
+                      : 'bg-white text-gray-700 border border-slate-200'
                   }`}>
                     {message.parts.map((part, partIndex) => (
                       <div key={partIndex}>
@@ -219,10 +219,10 @@ const ChatMain: React.FC<ChatMainProps> = ({
             {loading && (
               <div className="flex justify-start">
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shadow-sm">
                     <span className="text-lg">🤖</span>
                   </div>
-                  <div className="bg-slate-700/50 rounded-2xl px-4 py-3 border border-slate-600/50">
+                  <div className="bg-white rounded-2xl px-4 py-3 border border-slate-200 shadow-sm">
                     <LoadingDots />
                   </div>
                 </div>
@@ -236,17 +236,17 @@ const ChatMain: React.FC<ChatMainProps> = ({
       </div>
 
       {/* 底部輸入區 - 固定位置 */}
-      <div className="border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-6">
+      <div className="border-t border-slate-200 bg-white p-3 md:p-6">
         <form onSubmit={handleSend} className="space-y-4">
           {/* 圖片預覽 */}
           {image && (
-            <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-xl border border-slate-600/50">
+            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
               <img src={image} alt="圖片預覽" className="w-16 h-16 object-cover rounded-lg" />
-              <span className="text-slate-300 text-sm">圖片已準備上傳</span>
+              <span className="text-gray-600 text-sm">圖片已準備上傳</span>
               <button
                 type="button"
                 onClick={() => {/* 清除圖片邏輯 */}}
-                className="ml-auto text-red-400 hover:text-red-300"
+                className="ml-auto text-red-500 hover:text-red-600"
               >
                 ✕
               </button>
@@ -254,10 +254,10 @@ const ChatMain: React.FC<ChatMainProps> = ({
           )}
 
           {/* 輸入框區域 */}
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-2 md:gap-3 items-end">
             {/* 圖片上傳按鈕 */}
-            <label className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 cursor-pointer transition-colors border border-slate-600/50 hover:border-slate-500/50">
-              <span className="text-lg">📎</span>
+            <label className="p-2 md:p-3 rounded-xl bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors border border-slate-200 flex-shrink-0">
+              <span className="text-base md:text-lg">📎</span>
               <input
                 type="file"
                 accept="image/*"
@@ -273,9 +273,9 @@ const ChatMain: React.FC<ChatMainProps> = ({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="輸入你的數學問題... (Enter 送出，Shift+Enter 換行)"
-                className="w-full px-4 py-3 rounded-xl bg-slate-700/50 text-white placeholder:text-slate-400 
-                          focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all duration-200
-                          border border-slate-600/50 hover:border-slate-500/50 resize-none 
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
+                          focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
+                          border border-slate-200 hover:border-slate-300 resize-none
                           min-h-[48px] max-h-[200px] overflow-y-auto custom-input-scrollbar"
                 rows={1}
                 style={{ 
@@ -304,15 +304,14 @@ const ChatMain: React.FC<ChatMainProps> = ({
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 
-                        hover:from-indigo-600 hover:to-purple-700 text-white font-semibold
-                        transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 
-                        disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-medium
+                        text-sm md:text-base transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50
+                        disabled:cursor-not-allowed flex items-center gap-1 md:gap-2 flex-shrink-0"
             >
               {loading ? <LoadingDots /> : (
                 <>
-                  <span>送出</span>
-                  <span className="text-lg">🚀</span>
+                  <span className="hidden sm:inline">送出</span>
+                  <span className="text-base md:text-lg">→</span>
                 </>
               )}
             </button>

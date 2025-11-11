@@ -19,7 +19,7 @@ export default function HeaderInfo({
   maxScore
 }: HeaderInfoProps) {
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 px-6 py-4">
+    <div className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         {/* 左側：卷名和題號 */}
         <div className="flex items-center space-x-6">
@@ -56,13 +56,13 @@ export default function HeaderInfo({
           
           {/* 進度指示器 */}
           <div className="flex items-center space-x-2">
-            <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300"
+                className="h-full bg-gray-700 transition-all duration-300"
                 style={{ width: `${(currentQuestion / totalQuestions) * 100}%` }}
               />
             </div>
-            <span className="text-sm text-slate-400 min-w-max">
+            <span className="text-sm text-gray-600 min-w-max">
               {currentQuestion} / {totalQuestions}
             </span>
           </div>

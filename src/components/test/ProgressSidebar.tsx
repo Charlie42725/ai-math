@@ -55,7 +55,7 @@ export default function ProgressSidebar({
       {/* 進度條 */}
       <div className="w-3 flex-1 bg-slate-700 rounded-full overflow-hidden mb-4 relative">
         <div 
-          className="w-full bg-gradient-to-t from-blue-500 to-indigo-500 transition-all duration-700 rounded-full"
+          className="w-full bg-gray-700 transition-all duration-700 rounded-full"
           style={{ height: `${progress}%` }}
         />
         

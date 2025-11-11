@@ -23,24 +23,24 @@ export default function LotteryPage() {
       </div>
 
       {/* 返回首頁按鈕 */}
-      <div className="fixed top-4 left-4 z-50">
+      <div className="fixed top-3 md:top-4 left-3 md:left-4 z-50">
         <Link
           href="/"
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105"
+          className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 text-sm md:text-base"
         >
-          ← 返回首頁
+          ← <span className="hidden sm:inline">返回首頁</span><span className="sm:hidden">首頁</span>
         </Link>
       </div>
 
       {/* 頁面標題 */}
-      <div className="fixed top-4 right-4 z-50">
-        <h1 className="text-2xl font-bold text-white drop-shadow-lg">
+      <div className="fixed top-3 md:top-4 right-3 md:right-4 z-50">
+        <h1 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg">
           🎰 抽卡系統
         </h1>
       </div>
 
       {/* 抽獎組件 */}
-      <div className="pt-8"> {/* 大幅減少頂部間距 */}
+      <div className="pt-4 md:pt-8 px-4"> {/* 大幅減少頂部間距 */}
         <LotteryBox onPrizeWon={handlePrizeWon} />
       </div>
     </div>

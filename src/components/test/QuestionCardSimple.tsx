@@ -92,15 +92,15 @@ const QuestionCardSimple = ({
   return (
     <div className="max-w-4xl mx-auto">
       {/* 題目卡片 */}
-      <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         {/* 題目標題區 */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 border-b border-slate-700/50">
+        <div className="bg-gray-50 p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white mb-2">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
                 第 {questionNumber} 題 - {question.title}
               </h2>
-              <div className="text-blue-300 text-sm font-medium">
+              <div className="text-gray-600 text-sm font-medium">
                 {question.points} 分 • {question.type === 'multiple' ? '選擇題' : '計算題'}
               </div>
             </div>
@@ -109,7 +109,7 @@ const QuestionCardSimple = ({
 
         {/* 題目內容 */}
         <div className="p-6">
-          <div className="text-lg text-slate-200 mb-6 leading-relaxed">
+          <div className="text-lg text-gray-900 mb-6 leading-relaxed">
             {question.content}
           </div>
 
@@ -118,7 +118,7 @@ const QuestionCardSimple = ({
             <div className="space-y-6">
               {/* 選項區域 */}
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-white mb-4">請選擇答案</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">請選擇答案</h3>
                 {question.options.map((option, index) => {
                   const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
                   const isSelected = localAnswer === optionLabel;
@@ -128,8 +128,8 @@ const QuestionCardSimple = ({
                       key={index}
                       className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
                         ${isSelected 
-                          ? 'border-blue-500 bg-blue-500/10 text-blue-300' 
-                          : 'border-slate-600 hover:border-slate-500 text-slate-300'
+                          ? 'border-gray-800 bg-gray-50 text-gray-900' 
+                          : 'border-gray-300 hover:border-gray-500 text-gray-900'
                         }
                         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                       `}
@@ -144,7 +144,7 @@ const QuestionCardSimple = ({
                         className="sr-only"
                       />
                       <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center text-sm font-bold
-                        ${isSelected ? 'border-blue-500 bg-blue-500 text-white' : 'border-slate-500'}
+                        ${isSelected ? 'border-gray-800 bg-gray-800 text-white' : 'border-gray-400 text-gray-900'}
                       `}>
                         {optionLabel}
                       </div>
@@ -155,13 +155,13 @@ const QuestionCardSimple = ({
               </div>
 
               {/* 解題思路輸入區域 */}
-              <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/50">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-medium text-white">
+                  <h3 className="text-base font-medium text-gray-900">
                     <span className="mr-2">🧠</span>
                     解題思路與過程
                   </h3>
-                  <span className="text-slate-400 text-sm">
+                  <span className="text-gray-900 text-sm">
                     (選填，有助於 AI 分析)
                   </span>
                 </div>
@@ -172,17 +172,17 @@ const QuestionCardSimple = ({
                   disabled={disabled}
                   placeholder="請說明你的解題思路，例如：&#10;1. 我先看到這是一元二次方程式...&#10;2. 使用因式分解法...&#10;3. 檢驗答案..."
                   rows={3}
-                  className="w-full p-3 bg-slate-700/50 border border-slate-600/50 rounded-lg 
-                           text-slate-200 placeholder-slate-400 resize-none focus:outline-none 
-                           focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full p-3 bg-white border border-gray-300 rounded-lg 
+                           text-gray-900 placeholder-gray-900 resize-none focus:outline-none 
+                           focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all"
                 />
                 
                 <div className="flex items-center justify-between text-xs mt-2">
-                  <span className="text-slate-400">
+                  <span className="text-gray-900">
                     字數：{localProcess.length}
                   </span>
-                  <span className="text-slate-400">
-                    💡 詳細思考過程有助於獲得更準確回饋
+                  <span className="text-gray-900">
+                    💡 詳細的思考過程有助於獲得更準確的 AI 回饋
                   </span>
                 </div>
               </div>
@@ -194,9 +194,9 @@ const QuestionCardSimple = ({
                 onChange={(e) => setLocalAnswer(e.target.value)}
                 disabled={disabled}
                 placeholder="請在此輸入您的解答過程和答案..."
-                className="w-full h-32 p-4 bg-slate-700/50 border border-slate-600 rounded-xl 
-                         text-white placeholder-slate-400 resize-none focus:outline-none 
-                         focus:border-blue-500 focus:bg-slate-700/70 transition-all duration-200"
+                className="w-full h-32 p-4 bg-white border border-gray-300 rounded-lg 
+                         text-gray-900 placeholder-gray-900 resize-none focus:outline-none 
+                         focus:border-gray-500 transition-all duration-200"
               />
             </div>
           )}
@@ -265,10 +265,10 @@ const QuestionCardSimple = ({
               <button
                 onClick={handleSubmit}
                 disabled={!localAnswer.trim() || disabled || isSubmitting}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                         disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
-                         px-8 py-3 rounded-xl font-semibold text-white transition-all duration-200 
-                         shadow-md hover:shadow-blue-500/25 hover:scale-105 flex items-center space-x-2"
+                className="bg-gray-800 hover:bg-gray-900 
+                         disabled:bg-gray-400 disabled:cursor-not-allowed
+                         px-8 py-3 rounded-lg font-semibold text-white transition-all duration-200 
+                         shadow-sm hover:shadow-md flex items-center space-x-2"
               >
                 {isSubmitting && (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

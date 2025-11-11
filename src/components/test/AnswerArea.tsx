@@ -89,16 +89,16 @@ export default function AnswerArea({
     return (
       <div className="space-y-6">
         {/* 選項區域 */}
-        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-white">請選擇答案</h3>
+            <h3 className="text-lg font-medium text-gray-900">請選擇答案</h3>
             {isSubmitted && (
               <div className="flex items-center space-x-2">
-                <span className="text-green-400 text-sm">✓ 已提交</span>
+                <span className="text-green-600 text-sm">✓ 已提交</span>
                 {!disabled && (
                   <button
                     onClick={handleEdit}
-                    className="text-blue-400 hover:text-blue-300 text-sm underline"
+                    className="text-gray-600 hover:text-gray-900 text-sm underline"
                   >
                     修改答案
                   </button>
@@ -118,8 +118,8 @@ export default function AnswerArea({
                   className={`
                     flex items-start space-x-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
                     ${isSelected 
-                      ? 'border-blue-500 bg-blue-500/10' 
-                      : 'border-slate-600/50 bg-slate-700/20 hover:border-slate-500/70 hover:bg-slate-700/30'
+                      ? 'border-gray-800 bg-gray-50' 
+                      : 'border-gray-200 bg-white hover:border-gray-400 hover:bg-gray-50'
                     }
                     ${disabled || isSubmitted ? 'cursor-not-allowed opacity-70' : ''}
                   `}
@@ -136,17 +136,17 @@ export default function AnswerArea({
                   <div className={`
                     flex items-center justify-center w-8 h-8 rounded-full border-2 font-medium text-sm transition-all
                     ${isSelected 
-                      ? 'border-blue-500 bg-blue-500 text-white' 
-                      : 'border-slate-500 text-slate-400'
+                      ? 'border-gray-800 bg-gray-800 text-white' 
+                      : 'border-gray-300 text-gray-900'
                     }
                   `}>
                     {optionLetter}
                   </div>
-                  <span className="text-slate-200 flex-1 leading-relaxed">
+                  <span className="text-gray-900 flex-1 leading-relaxed">
                     {option}
                   </span>
                   {isSelected && (
-                    <div className="text-blue-400">
+                    <div className="text-gray-800">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -159,13 +159,13 @@ export default function AnswerArea({
         </div>
 
         {/* 解題思路輸入區域 */}
-        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-white">
+            <h3 className="text-lg font-medium text-gray-900">
               <span className="mr-2">🧠</span>
               解題思路與過程
             </h3>
-            <span className="text-slate-400 text-sm">
+            <span className="text-gray-900 text-sm">
               (選填，有助於 AI 分析你的思考方式)
             </span>
           </div>
@@ -178,18 +178,18 @@ export default function AnswerArea({
               placeholder="請說明你的解題思路和計算過程，例如：&#10;1. 我先看到這是一元二次方程式...&#10;2. 使用因式分解法...&#10;3. 檢驗答案..."
               rows={4}
               className={`
-                w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl 
-                text-slate-200 placeholder-slate-400 resize-none focus:outline-none 
-                focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all
+                w-full px-4 py-3 bg-white border border-gray-200 rounded-xl 
+                text-gray-900 placeholder-gray-900 resize-none focus:outline-none 
+                focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition-all
                 ${disabled || isSubmitted ? 'cursor-not-allowed opacity-70' : ''}
               `}
             />
             
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
+              <span className="text-gray-900">
                 字數：{localProcess.length}
               </span>
-              <span className="text-slate-400">
+              <span className="text-gray-900">
                 💡 詳細的思考過程有助於獲得更準確的 AI 回饋
               </span>
             </div>
@@ -202,10 +202,10 @@ export default function AnswerArea({
             <button
               onClick={handleSubmit}
               disabled={!localAnswer || isSubmitting}
-              className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 
-                         disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
-                         text-white font-medium rounded-xl transition-all duration-200
-                         shadow-lg hover:shadow-blue-500/25 text-lg flex items-center space-x-2"
+              className="px-8 py-3 bg-gray-800 hover:bg-gray-900 
+                         disabled:bg-gray-400 disabled:cursor-not-allowed
+                         text-white font-medium rounded-lg transition-all duration-200
+                         shadow-sm hover:shadow-md text-lg flex items-center space-x-2"
             >
               {isSubmitting && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -223,16 +223,16 @@ export default function AnswerArea({
 
   // 開放題組件
   return (
-    <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-white">請輸入您的答案</h3>
+        <h3 className="text-lg font-medium text-gray-900">請輸入您的答案</h3>
         {isSubmitted && (
           <div className="flex items-center space-x-2">
-            <span className="text-green-400 text-sm">✓ 已提交</span>
+            <span className="text-green-600 text-sm">✓ 已提交</span>
             {!disabled && (
               <button
                 onClick={handleEdit}
-                className="text-blue-400 hover:text-blue-300 text-sm underline"
+                className="text-gray-600 hover:text-gray-900 text-sm underline"
               >
                 修改答案
               </button>
@@ -249,18 +249,18 @@ export default function AnswerArea({
           placeholder="請在此輸入您的答案..."
           rows={6}
           className={`
-            w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl 
-            text-slate-200 placeholder-slate-400 resize-none focus:outline-none 
-            focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all
+            w-full px-4 py-3 bg-white border border-gray-200 rounded-xl 
+            text-gray-900 placeholder-gray-900 resize-none focus:outline-none 
+            focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition-all
             ${disabled || isSubmitted ? 'cursor-not-allowed opacity-70' : ''}
           `}
         />
         
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">
+          <span className="text-gray-900">
             字數：{localAnswer.length}
           </span>
-          <span className="text-slate-400">
+          <span className="text-gray-900">
             建議詳細說明解題過程
           </span>
         </div>
@@ -272,10 +272,10 @@ export default function AnswerArea({
           <button
             onClick={handleSubmit}
             disabled={!localAnswer.trim() || isSubmitting}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 
-                       disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed
-                       text-white font-medium rounded-xl transition-all duration-200
-                       shadow-lg hover:shadow-blue-500/25 flex items-center space-x-2"
+            className="px-6 py-3 bg-gray-800 hover:bg-gray-900 
+                       disabled:bg-gray-400 disabled:cursor-not-allowed
+                       text-white font-medium rounded-lg transition-all duration-200
+                       shadow-sm hover:shadow-md flex items-center space-x-2"
           >
             {isSubmitting && (
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

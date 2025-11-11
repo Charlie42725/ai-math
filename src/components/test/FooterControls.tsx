@@ -24,7 +24,7 @@ export default function FooterControls({
   const progress = Math.round(((currentQuestion + 1) / totalQuestions) * 100);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-800/95 backdrop-blur-sm border-t border-slate-700/50 px-6 py-4 z-30">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 z-30">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* 左側：上一題 */}
         <button
@@ -33,8 +33,8 @@ export default function FooterControls({
           className={`
             flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
             ${isFirstQuestion
-              ? 'text-slate-500 cursor-not-allowed'
-              : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+              ? 'text-gray-600 cursor-not-allowed'
+              : 'text-gray-900 hover:bg-gray-100'
             }
           `}
         >
@@ -47,10 +47,10 @@ export default function FooterControls({
         {/* 中間：進度和提交 */}
         <div className="flex items-center space-x-6">
           <div className="text-center">
-            <div className="text-slate-300 font-medium">
+            <div className="text-gray-900 font-medium">
               {progress}% 完成
             </div>
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-gray-900">
               第 {currentQuestion + 1} 題 / 共 {totalQuestions} 題
             </div>
           </div>
@@ -58,8 +58,8 @@ export default function FooterControls({
           {!isSubmitted && canSubmit && (
             <button
               onClick={onSubmitExam}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 
-                         text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/25"
+              className="px-6 py-3 bg-gray-800 hover:bg-gray-900 
+                         text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
             >
               結束測驗
             </button>
@@ -82,8 +82,8 @@ export default function FooterControls({
           className={`
             flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
             ${isLastQuestion
-              ? 'text-slate-500 cursor-not-allowed'
-              : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+              ? 'text-gray-600 cursor-not-allowed'
+              : 'text-gray-900 hover:bg-gray-100'
             }
           `}
         >

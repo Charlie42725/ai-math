@@ -60,8 +60,9 @@ const EnhancedAnalysisSidebar = ({
   if (!result) {
     return (
       <div className={`
-        fixed top-6 right-6 bottom-24 w-1/2 bg-slate-50 backdrop-blur-sm border border-gray-200 
-        transform transition-transform duration-300 z-40 shadow-2xl rounded-2xl overflow-hidden
+        fixed inset-0 lg:top-6 lg:right-6 lg:bottom-24 lg:inset-auto
+        w-full lg:w-1/2 bg-slate-50 backdrop-blur-sm border-0 lg:border border-gray-200
+        transform transition-transform duration-300 z-40 shadow-2xl lg:rounded-2xl overflow-hidden
         flex flex-col
         ${isVisible ? 'translate-x-0' : 'translate-x-full'}
       `}>
@@ -83,14 +84,14 @@ const EnhancedAnalysisSidebar = ({
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+          <div className="p-8 text-center text-gray-900 flex flex-col items-center justify-center h-full">
             <div className="mb-6">
               <svg className="w-24 h-24 mx-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
             <p className="text-xl mb-2">提交答案後</p>
-            <p className="text-lg text-gray-400">AI 分析結果將在此顯示</p>
+            <p className="text-lg text-gray-900">AI 分析結果將在此顯示</p>
           </div>
         </div>
       </div>
@@ -99,23 +100,25 @@ const EnhancedAnalysisSidebar = ({
 
   return (
     <div className={`
-      fixed top-6 right-6 bottom-24 w-1/2 bg-white backdrop-blur-sm border border-gray-200 
-      transform transition-transform duration-300 z-40 shadow-2xl rounded-2xl overflow-hidden
+      fixed inset-0 lg:top-6 lg:right-6 lg:bottom-24 lg:inset-auto
+      w-full lg:w-1/2 bg-white backdrop-blur-sm border-0 lg:border border-gray-200
+      transform transition-transform duration-300 z-40 shadow-2xl lg:rounded-2xl overflow-hidden
       flex flex-col
       ${isVisible ? 'translate-x-0' : 'translate-x-full'}
     `}>
       {/* 標題欄 */}
-      <div className="flex-shrink-0 p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <div className="flex-shrink-0 p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center space-x-2">
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center space-x-2">
             <span>🤖</span>
             <span>AI 分析結果</span>
           </h3>
           <button
             onClick={onToggle}
             className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded"
+            aria-label="關閉側邊欄"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -124,7 +127,7 @@ const EnhancedAnalysisSidebar = ({
 
       {/* 分析內容 - 可滾動區域 */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9' }}>
-        <div className="p-6 space-y-6">
+        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
           
           {/* 第一階段：答題結果 */}
           {revealStage === 0 && (
@@ -146,15 +149,15 @@ const EnhancedAnalysisSidebar = ({
           {revealStage >= 1 && (
             <>
               {/* 答案正確性 - 大字體 + icon */}
-              <div className={`text-center p-6 rounded-xl ${
-                result.isCorrect 
-                  ? 'bg-green-50 border border-green-200' 
+              <div className={`text-center p-4 md:p-6 rounded-xl ${
+                result.isCorrect
+                  ? 'bg-green-50 border border-green-200'
                   : 'bg-red-50 border border-red-200'
               }`}>
-                <div className="text-6xl mb-2">
+                <div className="text-4xl md:text-6xl mb-2">
                   {result.isCorrect ? '✅' : '❌'}
                 </div>
-                <div className={`text-2xl font-bold ${
+                <div className={`text-xl md:text-2xl font-bold ${
                   result.isCorrect ? 'text-green-700' : 'text-red-700'
                 }`}>
                   {result.isCorrect ? '答案正確！' : '答案錯誤'}

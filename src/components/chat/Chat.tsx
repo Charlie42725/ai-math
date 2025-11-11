@@ -185,6 +185,9 @@ type ChatHistory = {
   const [image, setImage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null!) as React.RefObject<HTMLInputElement>;
 
+  // 側邊欄顯示狀態 (移動裝置)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // 專門用於程式化發送訊息的函數
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim()) return;
@@ -344,9 +347,15 @@ type ChatHistory = {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex text-white overflow-hidden">
+    <div className="h-screen bg-slate-100 flex text-gray-800 overflow-hidden">
       {/* 左欄：對話紀錄清單 */}
-      <div className="w-80 bg-slate-800/50 backdrop-blur-sm border-r border-slate-700/50 flex flex-col">
+      <div className={`
+        fixed lg:relative z-50 lg:z-auto
+        w-80 lg:w-80
+        h-full bg-white border-r border-slate-200 flex flex-col
+        transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         <ChatSidebar
           user={user}
           chatHistories={chatHistories}
@@ -379,17 +388,27 @@ type ChatHistory = {
           loading={loading}
           tags={tags}
           sendMessage={sendMessage}
+          onCloseSidebar={() => setSidebarOpen(false)}
         />
       </div>
 
+      {/* 側邊欄遮罩 (移動裝置) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* 右欄：當前對話視窗 */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 w-full lg:w-auto">
         {/* 頂部工具列 */}
-        <ChatTopbar 
-          user={user} 
-          onLogout={async () => { 
-            await supabase.auth.signOut(); 
-          }} 
+        <ChatTopbar
+          user={user}
+          onLogout={async () => {
+            await supabase.auth.signOut();
+          }}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         
         {/* 對話主體 */}

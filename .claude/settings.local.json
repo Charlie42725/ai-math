@@ -4,7 +4,9 @@
       "Read(//mnt/c/Users/linei/Desktop/coding/**)",
       "Bash(npm run build:*)",
       "Bash(npm install)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "Bash(/dev/null)"
     ],
     "deny": [],
     "ask": []

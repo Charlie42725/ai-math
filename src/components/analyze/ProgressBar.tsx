@@ -38,9 +38,9 @@ export default function ProgressBar({
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-slate-200">{label}</span>
+        <span className="text-sm font-medium text-gray-900">{label}</span>
         {showPercentage && (
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-gray-700">
             {value}/{max} ({Math.round(percentage)}%)
           </span>
         )}

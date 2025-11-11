@@ -1,17 +1,19 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { standardizeConcept } from "@/lib/conceptMapping";
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 import ProgressBar from "./ProgressBar";
 import LearningBadge from "./LearningBadge";
 
 export default function GameDashboard({ data }: { data: any[] }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'tasks' | 'badges'>('overview');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'tasks' | 'badges'>('overview');
 
   // 處理概念數據
   const conceptCount: Record<string, number> = {};
   const unstableCount: Record<string, number> = {};
-  
+
   data.forEach((row) => {
     row.concepts_used?.forEach((c: string) => {
       const standardized = standardizeConcept(c);
@@ -19,7 +21,7 @@ export default function GameDashboard({ data }: { data: any[] }) {
         conceptCount[standardized] = (conceptCount[standardized] || 0) + 1;
       }
     });
-    
+
     row.unstable_concepts?.forEach((c: string) => {
       const standardized = standardizeConcept(c);
       if (standardized.length > 1) {
@@ -32,8 +34,8 @@ export default function GameDashboard({ data }: { data: any[] }) {
   const mergeConceptData = (countData: Record<string, number>) => {
     const merged: Record<string, number> = {};
     Object.entries(countData).forEach(([concept, count]) => {
-      if (concept.includes('立體圖形') || concept.includes('幾何') || 
-          concept.includes('三角形') || concept.includes('平行') || 
+      if (concept.includes('立體圖形') || concept.includes('幾何') ||
+          concept.includes('三角形') || concept.includes('平行') ||
           concept.includes('圓形') || concept.includes('相似')) {
         const mainCategory = concept.includes('立體') ? '立體圖形' : '幾何圖形';
         merged[mainCategory] = (merged[mainCategory] || 0) + count;
@@ -55,56 +57,71 @@ export default function GameDashboard({ data }: { data: any[] }) {
   // 獲取最強概念
   const strongestConcepts = Object.entries(mergedConcepts)
     .sort(([,a], [,b]) => b - a)
-    .slice(0, 3);
+    .slice(0, 5);
 
   // 獲取弱點警告
   const weaknessConcepts = Object.entries(mergedUnstable)
     .sort(([,a], [,b]) => b - a)
-    .slice(0, 2);
+    .slice(0, 3);
 
-  // 準備雷達圖數據
-  const radarData = Object.keys(mergedConcepts).map(concept => ({
-    concept: concept.length > 6 ? concept.slice(0, 6) + '...' : concept,
+  // 準備長條圖數據 - 概念掌握度對比
+  const barChartData = Object.keys(mergedConcepts).map(concept => ({
+    name: concept.length > 8 ? concept.slice(0, 8) + '...' : concept,
     fullName: concept,
-    mastery: mergedConcepts[concept] || 0,
-    weakness: mergedUnstable[concept] || 0,
-    score: Math.max(0, (mergedConcepts[concept] || 0) - (mergedUnstable[concept] || 0))
-  })).slice(0, 6);
+    正確: (mergedConcepts[concept] || 0) - (mergedUnstable[concept] || 0),
+    錯誤: mergedUnstable[concept] || 0,
+    總計: mergedConcepts[concept] || 0
+  })).sort((a, b) => b.總計 - a.總計).slice(0, 8);
+
+  // 準備趨勢線數據 - 學習進度趨勢
+  const trendData = data.slice(-10).map((row, index) => ({
+    session: `第${data.length - 9 + index}次`,
+    conceptsUsed: row.concepts_used?.length || 0,
+    unstableConcepts: row.unstable_concepts?.length || 0,
+    accuracy: row.concepts_used?.length > 0
+      ? Math.round(((row.concepts_used.length - (row.unstable_concepts?.length || 0)) / row.concepts_used.length) * 100)
+      : 0
+  }));
 
   // AI 建議轉任務
-  const allFeedbacks = data.flatMap(row => 
+  const allFeedbacks = data.flatMap(row =>
     row.ai_feedback?.map((f: string) => ({ id: row.id, text: f })) ?? []
   );
-  
-  const uniqueFeedbacks = allFeedbacks.filter((feedback, index, arr) => 
-    index === arr.findIndex(f => 
+
+  const uniqueFeedbacks = allFeedbacks.filter((feedback, index, arr) =>
+    index === arr.findIndex(f =>
       f.text.slice(0, 20) === feedback.text.slice(0, 20)
     )
-  ).slice(0, 3);
+  ).slice(0, 5);
 
   // 將建議轉換為任務
   const convertToTasks = (feedbacks: any[]) => {
     return feedbacks.map((feedback, index) => {
       let taskText = feedback.text;
       let taskType = '📚';
-      
+      let actionLink = '/test'; // 默認跳轉到測驗頁
+
       if (taskText.includes('練習') || taskText.includes('題目')) {
         taskType = '✏️';
         taskText = taskText.replace(/建議|可以|應該/g, '').trim();
         if (!taskText.includes('題')) taskText += ' 3題練習';
+        actionLink = '/test';
       } else if (taskText.includes('概念') || taskText.includes('理解')) {
         taskType = '🎯';
         taskText = taskText.replace(/建議|可以|應該/g, '').trim();
+        actionLink = '/chat';
       } else if (taskText.includes('影片') || taskText.includes('觀看')) {
         taskType = '📺';
         taskText = taskText.replace(/建議|可以|應該/g, '').trim();
         if (!taskText.includes('分鐘')) taskText += ' 5分鐘';
+        actionLink = '/chat';
       }
-      
+
       return {
         id: index,
         type: taskType,
         text: taskText,
+        actionLink,
         completed: false
       };
     });
@@ -147,9 +164,9 @@ export default function GameDashboard({ data }: { data: any[] }) {
     },
     {
       title: "數學愛好者",
-      description: "掌握3個數學概念",
+      description: "掌握5個數學概念",
       icon: "🎯",
-      earned: strongestConcepts.length >= 3,
+      earned: strongestConcepts.length >= 5,
       rarity: "rare" as const
     },
     {
@@ -168,44 +185,48 @@ export default function GameDashboard({ data }: { data: any[] }) {
     }
   ];
 
+  const handleTaskStart = (task: any) => {
+    router.push(task.actionLink);
+  };
+
   if (data.length === 0) {
     return (
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg p-8 border border-slate-700/50">
+      <div className="bg-white rounded-xl shadow-sm p-8 border border-slate-200">
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-20 h-20 rounded-full bg-slate-700/50 flex items-center justify-center mb-6">
+          <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-6">
             <span className="text-3xl">🎮</span>
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">學習卡片儀表板</h3>
-          <p className="text-slate-400 mb-2">開始對話後即可解鎖學習進度</p>
-          <p className="text-slate-500 text-sm">在這裡查看你的數學學習歷程與任務</p>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">學習分析儀表板</h3>
+          <p className="text-gray-600 mb-2">開始對話後即可解鎖學習進度</p>
+          <p className="text-gray-500 text-sm">在這裡查看你的數學學習歷程與任務</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-slate-700/50 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* 角色卡片頭部 */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/30">
-              <span className="text-2xl">🎓</span>
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6 border-b border-gray-200">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center border-2 border-blue-200 shadow-sm flex-shrink-0">
+              <span className="text-xl md:text-2xl">🎓</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">{title}</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h2>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-yellow-300">等級 {level}</span>
-                <div className="px-2 py-1 rounded-full bg-white/20 text-white text-xs font-semibold">
+                <span className="text-base md:text-lg font-bold text-blue-600">等級 {level}</span>
+                <div className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
                   {stabilityPercentage}% 完成度
                 </div>
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-white text-sm mb-1">學習穩定度</div>
-            <div className="w-32 h-3 rounded-full bg-white/20 overflow-hidden">
-              <div 
+          <div className="w-full md:w-auto">
+            <div className="text-gray-700 text-sm mb-1">學習穩定度</div>
+            <div className="w-full md:w-32 h-3 rounded-full bg-gray-200 overflow-hidden">
+              <div
                 className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-500`}
                 style={{ width: `${stabilityPercentage}%` }}
               ></div>
@@ -214,13 +235,13 @@ export default function GameDashboard({ data }: { data: any[] }) {
         </div>
 
         {/* HP 血量條 */}
-        <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+        <div className="bg-white/80 rounded-lg p-3 md:p-4 border border-blue-100">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-white font-semibold">💪 基礎穩定度</span>
-            <span className="text-white/80">{stabilityPercentage}/100</span>
+            <span className="text-gray-900 font-semibold text-sm md:text-base">💪 基礎穩定度</span>
+            <span className="text-gray-700 text-sm md:text-base">{stabilityPercentage}/100</span>
           </div>
-          <div className="w-full h-4 rounded-full bg-white/20 overflow-hidden">
-            <div 
+          <div className="w-full h-3 md:h-4 rounded-full bg-gray-200 overflow-hidden">
+            <div
               className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 relative`}
               style={{ width: `${stabilityPercentage}%` }}
             >
@@ -231,21 +252,21 @@ export default function GameDashboard({ data }: { data: any[] }) {
       </div>
 
       {/* 標籤切換 */}
-      <div className="bg-slate-700/50 px-6 py-3 border-b border-slate-600/50">
-        <div className="flex gap-1">
+      <div className="bg-gray-50 px-4 md:px-6 py-3 border-b border-gray-200 overflow-x-auto">
+        <div className="flex gap-1 min-w-max">
           {[
             { id: 'overview', label: '📊 總覽', icon: '📊' },
-            { id: 'radar', label: '🎯 雷達分析', icon: '🎯' },
+            { id: 'trends', label: '📈 學習趨勢', icon: '📈' },
             { id: 'tasks', label: '✅ 升級任務', icon: '✅' },
             { id: 'badges', label: '🏆 成就徽章', icon: '🏆' }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+              className={`px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition-all duration-200 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-indigo-500 text-white shadow-lg'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-600/50'
+                  ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-white'
               }`}
             >
               {tab.label}
@@ -254,31 +275,31 @@ export default function GameDashboard({ data }: { data: any[] }) {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* 學習進度條 */}
             <div>
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span>📈</span> 學習進度條
               </h3>
-              <div className="bg-slate-700/30 rounded-lg p-4 space-y-4">
-                <ProgressBar 
-                  value={strongestConcepts.length} 
-                  max={6} 
-                  label="掌握概念數量" 
+              <div className="bg-slate-50 rounded-lg p-3 md:p-4 space-y-4 border border-slate-200">
+                <ProgressBar
+                  value={strongestConcepts.length}
+                  max={10}
+                  label="掌握概念數量"
                   color="green"
                 />
-                <ProgressBar 
-                  value={Math.min(100, data.length * 10)} 
-                  max={100} 
-                  label="學習活躍度" 
+                <ProgressBar
+                  value={Math.min(100, data.length * 10)}
+                  max={100}
+                  label="學習活躍度"
                   color="blue"
                 />
-                <ProgressBar 
-                  value={stabilityPercentage} 
-                  max={100} 
-                  label="基礎穩定度" 
+                <ProgressBar
+                  value={stabilityPercentage}
+                  max={100}
+                  label="基礎穩定度"
                   color={stabilityPercentage >= 80 ? 'green' : stabilityPercentage >= 60 ? 'orange' : 'red'}
                 />
               </div>
@@ -286,19 +307,19 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
             {/* 強項展示 */}
             <div>
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span>🏆</span> 你的強項領域
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {strongestConcepts.map(([concept, count], index) => (
-                  <div key={concept} className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-4 border border-green-500/30">
+                  <div key={concept} className="bg-green-50 rounded-lg p-3 md:p-4 border border-green-200">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-green-300 font-semibold">{concept}</div>
-                        <div className="text-green-400 text-sm">{count} 次使用</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-green-700 font-semibold text-sm md:text-base truncate">{concept}</div>
+                        <div className="text-green-600 text-xs md:text-sm">{count} 次使用</div>
                       </div>
-                      <div className="text-2xl">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                      <div className="text-xl md:text-2xl flex-shrink-0 ml-2">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'}
                       </div>
                     </div>
                   </div>
@@ -309,18 +330,18 @@ export default function GameDashboard({ data }: { data: any[] }) {
             {/* 弱點警告 */}
             {weaknessConcepts.length > 0 && (
               <div>
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <span>⚠️</span> 需要加強的概念
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                   {weaknessConcepts.map(([concept, count]) => (
-                    <div key={concept} className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg p-4 border border-orange-500/30">
+                    <div key={concept} className="bg-orange-50 rounded-lg p-3 md:p-4 border border-orange-200">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-orange-300 font-semibold">{concept}</div>
-                          <div className="text-orange-400 text-sm">{count} 次錯誤</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-orange-700 font-semibold text-sm md:text-base truncate">{concept}</div>
+                          <div className="text-orange-600 text-xs md:text-sm">{count} 次錯誤</div>
                         </div>
-                        <span className="text-2xl">⚠️</span>
+                        <span className="text-xl md:text-2xl flex-shrink-0 ml-2">⚠️</span>
                       </div>
                     </div>
                   ))}
@@ -330,74 +351,124 @@ export default function GameDashboard({ data }: { data: any[] }) {
           </div>
         )}
 
-        {activeTab === 'radar' && (
-          <div>
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <span>🎯</span> 學習雷達分析
-            </h3>
-            <div className="bg-slate-700/30 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={400}>
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="#475569" />
-                  <PolarAngleAxis 
-                    dataKey="concept" 
-                    tick={{ fill: '#cbd5e1', fontSize: 12 }}
-                  />
-                  <PolarRadiusAxis 
-                    angle={90} 
-                    domain={[0, 'dataMax']} 
-                    tick={{ fill: '#cbd5e1', fontSize: 10 }}
-                  />
-                  <Radar
-                    name="掌握程度"
-                    dataKey="score"
-                    stroke="#6366f1"
-                    fill="#6366f1"
-                    fillOpacity={0.3}
-                    strokeWidth={2}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+        {activeTab === 'trends' && (
+          <div className="space-y-6">
+            {/* 概念掌握度對比 */}
+            <div>
+              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span>📊</span> 概念掌握度分析
+              </h3>
+              <div className="bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={barChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: '#64748b', fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '14px'
+                      }}
+                      formatter={(value: any, name: string) => [value, name === '正確' ? '正確次數' : '錯誤次數']}
+                    />
+                    <Legend />
+                    <Bar dataKey="正確" fill="#10b981" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="錯誤" fill="#f59e0b" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="mt-4 text-xs md:text-sm text-gray-600 text-center">
+                  💡 綠色代表正確次數，橙色代表錯誤次數
+                </div>
+              </div>
             </div>
-            <div className="mt-4 text-sm text-slate-400 text-center">
-              💡 雷達圖顯示各領域的學習強度，距離中心越遠代表掌握越好
-            </div>
+
+            {/* 學習進度趨勢 */}
+            {trendData.length > 0 && (
+              <div>
+                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <span>📈</span> 近期學習趨勢
+                </h3>
+                <div className="bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={trendData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="session"
+                        tick={{ fill: '#64748b', fontSize: 12 }}
+                      />
+                      <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          fontSize: '14px'
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="accuracy"
+                        stroke="#3b82f6"
+                        strokeWidth={3}
+                        name="準確率 (%)"
+                        dot={{ fill: '#3b82f6', r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <div className="mt-4 text-xs md:text-sm text-gray-600 text-center">
+                    💡 折線圖顯示最近10次學習的準確率趨勢
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'tasks' && (
           <div>
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6 flex items-center gap-2">
               <span>🎯</span> 今日升級任務
             </h3>
             {tasks.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-4xl mb-4">🎉</div>
-                <div className="text-slate-400">目前沒有新任務</div>
-                <div className="text-slate-500 text-sm mt-2">繼續學習來解鎖更多挑戰！</div>
+                <div className="text-3xl md:text-4xl mb-4">🎉</div>
+                <div className="text-gray-600">目前沒有新任務</div>
+                <div className="text-gray-500 text-sm mt-2">繼續學習來解鎖更多挑戰！</div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {tasks.map((task, index) => (
-                  <div key={task.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-all duration-200">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                        <span className="text-lg">{task.type}</span>
+                  <div key={task.id} className="bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200 hover:bg-slate-100 transition-all duration-200">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                        <span className="text-base md:text-lg">{task.type}</span>
                       </div>
-                      <div className="flex-1">
-                        <div className="text-white font-semibold">{task.text}</div>
-                        <div className="text-slate-400 text-sm mt-1">任務 {index + 1}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-gray-800 font-semibold text-sm md:text-base">{task.text}</div>
+                        <div className="text-gray-600 text-xs md:text-sm mt-1">任務 {index + 1}</div>
                       </div>
-                      <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200">
+                      <button
+                        onClick={() => handleTaskStart(task)}
+                        className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-green-600 text-white text-sm md:text-base font-semibold hover:bg-green-700 transition-all duration-200 shadow-sm flex-shrink-0"
+                      >
                         開始
                       </button>
                     </div>
                   </div>
                 ))}
                 <div className="text-center mt-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200">
                     <span>🔥</span>
-                    <span className="text-purple-300 font-semibold">完成任務獲得經驗值！</span>
+                    <span className="text-gray-700 font-semibold text-sm md:text-base">完成任務獲得經驗值！</span>
                   </div>
                 </div>
               </div>
@@ -407,18 +478,18 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
         {activeTab === 'badges' && (
           <div>
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6 flex items-center gap-2">
               <span>🏆</span> 成就徽章收集
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
               {badges.map((badge, index) => (
                 <LearningBadge key={index} {...badge} />
               ))}
             </div>
             <div className="mt-6 text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-50 border border-yellow-200">
                 <span>🎖️</span>
-                <span className="text-yellow-300 font-semibold">
+                <span className="text-yellow-700 font-semibold text-sm md:text-base">
                   已獲得 {badges.filter(b => b.earned).length}/{badges.length} 個徽章
                 </span>
               </div>
