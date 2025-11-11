@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 // 更新 chat history 訊息內容
 export async function updateChatHistory(id: string, messages: any[]) {
   const { data, error } = await supabase
@@ -33,7 +35,6 @@ export async function fetchChatHistoryById(id: string) {
     .single();
   return { data, error };
 }
-import { supabase } from "@/lib/supabase";
 
 export async function saveChatHistory(userId: string, messages: any[]): Promise<{ data: any[] | null; error: any }> {
   // 儲存一筆新的 chat history，僅存摘要與完整訊息
