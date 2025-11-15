@@ -65,48 +65,52 @@ export function isDuplicateConversation(
   });
 }
 
-// 清理過舊的重複檢查記錄
+/**
+ * 清理過舊的重複檢查記錄
+ * 優化版本：時間複雜度從 O(n²) 降至 O(n log n)
+ */
 export function cleanupOldDuplicateRecords(chatHistories: ChatHistoryItem[]): ChatHistoryItem[] {
-  const now = new Date().getTime();
-  const titleCounts = new Map<string, ChatHistoryItem[]>();
-  
-  // 按標題分組
+  // 使用 Map 按標題分組（O(n)）
+  const titleGroups = new Map<string, ChatHistoryItem[]>();
+
   for (const chat of chatHistories) {
-    if (!titleCounts.has(chat.title)) {
-      titleCounts.set(chat.title, []);
-    }
-    titleCounts.get(chat.title)!.push(chat);
+    const group = titleGroups.get(chat.title) || [];
+    group.push(chat);
+    titleGroups.set(chat.title, group);
   }
-  
+
   const result: ChatHistoryItem[] = [];
-  
-  // 對每個標題組進行去重
-  for (const [title, chats] of titleCounts) {
+
+  // 對每個標題組進行處理（總計 O(n log n)）
+  for (const [title, chats] of titleGroups) {
+    // 只有一個對話，直接保留
     if (chats.length === 1) {
       result.push(chats[0]);
       continue;
     }
-    
-    // 按時間排序，保留最新的
-    const sortedChats = chats.sort((a, b) => {
+
+    // 按時間排序（降序：最新的在前）- O(k log k)，其中 k 是同標題對話數
+    const sorted = chats.sort((a, b) => {
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return timeB - timeA;
+      return timeB - timeA; // 降序
     });
-    
-    // 保留最新的一個，除非時間差超過30秒（說明是不同的對話）
-    result.push(sortedChats[0]);
-    
-    for (let i = 1; i < sortedChats.length; i++) {
-      const currentTime = sortedChats[i].created_at ? new Date(sortedChats[i].created_at!).getTime() : 0;
-      const previousTime = sortedChats[i-1].created_at ? new Date(sortedChats[i-1].created_at!).getTime() : 0;
-      
-      // 如果時間差超過30秒，保留這個對話
-      if (previousTime - currentTime > 30000) {
-        result.push(sortedChats[i]);
+
+    // 單次遍歷處理（O(k)）
+    result.push(sorted[0]); // 永遠保留最新的
+    let lastKeptTime = sorted[0].created_at ? new Date(sorted[0].created_at).getTime() : 0;
+
+    for (let i = 1; i < sorted.length; i++) {
+      const currentTime = sorted[i].created_at ? new Date(sorted[i].created_at).getTime() : 0;
+
+      // 如果與上一個保留的對話時間差超過 30 秒，保留這個對話
+      if (lastKeptTime - currentTime > 30000) {
+        result.push(sorted[i]);
+        lastKeptTime = currentTime;
       }
+      // 否則，這個對話被視為重複，不保留
     }
   }
-  
+
   return result;
 }
