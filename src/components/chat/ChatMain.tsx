@@ -286,13 +286,13 @@ const ChatMain: React.FC<ChatMainProps> = ({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="輸入你的數學問題"
-                className="w-full px-4 py-3 pl-12 pr-12 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
+                className="w-full px-4 py-2.5 pl-11 pr-11 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
                           focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
                           border border-slate-200 hover:border-slate-300 resize-none
-                          min-h-[48px] max-h-[200px] overflow-y-auto custom-input-scrollbar"
+                          min-h-[44px] max-h-[200px] overflow-y-auto custom-input-scrollbar"
                 rows={1}
                 style={{ 
-                  minHeight: '48px',
+                  minHeight: '44px',
                   maxHeight: '200px',
                   resize: 'none',
                   lineHeight: '1.5'
@@ -313,7 +313,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
               />
               
               {/* 圖片上傳按鈕 - 左側 */}
-              <label className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
+              <label className="absolute left-2 top-2 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors z-10">
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
@@ -328,7 +328,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
               {/* 麥克風按鈕 - 右側 */}
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="absolute right-2 top-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors z-10"
                 onClick={() => {
                   // TODO: 實作語音輸入功能
                   alert('語音輸入功能開發中...');
@@ -344,9 +344,9 @@ const ChatMain: React.FC<ChatMainProps> = ({
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-4 md:px-6 py-3 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-medium
+              className="px-4 md:px-6 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-medium
                         text-sm md:text-base transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50
-                        disabled:cursor-not-allowed flex items-center gap-1 md:gap-2 flex-shrink-0 h-[48px]"
+                        disabled:cursor-not-allowed flex items-center gap-1 md:gap-2 flex-shrink-0 h-[44px]"
             >
               {loading ? <LoadingDots /> : (
                 <>
