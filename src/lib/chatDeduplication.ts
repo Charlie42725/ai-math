@@ -91,17 +91,17 @@ export function cleanupOldDuplicateRecords(chatHistories: ChatHistoryItem[]): Ch
 
     // 按時間排序（降序：最新的在前）- O(k log k)，其中 k 是同標題對話數
     const sorted = chats.sort((a, b) => {
-      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      const timeA = a.created_at ? new Date(a.created_at!).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at!).getTime() : 0;
       return timeB - timeA; // 降序
     });
 
     // 單次遍歷處理（O(k)）
     result.push(sorted[0]); // 永遠保留最新的
-    let lastKeptTime = sorted[0].created_at ? new Date(sorted[0].created_at).getTime() : 0;
+    let lastKeptTime = sorted[0].created_at ? new Date(sorted[0].created_at!).getTime() : 0;
 
     for (let i = 1; i < sorted.length; i++) {
-      const currentTime = sorted[i].created_at ? new Date(sorted[i].created_at).getTime() : 0;
+      const currentTime = sorted[i].created_at ? new Date(sorted[i].created_at!).getTime() : 0;
 
       // 如果與上一個保留的對話時間差超過 30 秒，保留這個對話
       if (lastKeptTime - currentTime > 30000) {

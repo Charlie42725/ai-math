@@ -132,7 +132,7 @@ export function withErrorHandler<T>(
 ): Promise<NextResponse<APIResponse<T>>> {
   return handler().catch((error) => {
     console.error('[API Error]', error);
-    return createErrorResponse(error);
+    return createErrorResponse(error) as NextResponse<APIResponse<T>>;
   });
 }
 
