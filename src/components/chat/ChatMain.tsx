@@ -340,21 +340,24 @@ const ChatMain: React.FC<ChatMainProps> = ({
               </button>
             </div>
 
-            {/* 送出按鈕 */}
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="px-4 md:px-6 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-medium
-                        text-sm md:text-base transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50
-                        disabled:cursor-not-allowed flex items-center gap-1 md:gap-2 flex-shrink-0 h-[44px]"
-            >
-              {loading ? <LoadingDots /> : (
-                <>
-                  <span className="hidden sm:inline">送出</span>
-                  <span className="text-base md:text-lg">→</span>
-                </>
-              )}
-            </button>
+            {/* 送出按鈕 - 有輸入時顯示 */}
+            {input.trim() && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="p-2.5 rounded-full bg-slate-700 hover:bg-slate-800 text-white
+                          transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50
+                          disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 w-[44px] h-[44px]"
+              >
+                {loading ? (
+                  <LoadingDots />
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                )}
+              </button>
+            )}
           </div>
         </form>
       </div>
