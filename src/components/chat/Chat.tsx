@@ -63,8 +63,7 @@ type ChatHistory = {
   // 防抖更新歷史記錄 - 改善版本
   const updateChatHistoriesDebounced = useRef<NodeJS.Timeout | null>(null);
   const [isUpdatingHistories, setIsUpdatingHistories] = useState(false);
-  const [newChatSaved, setNewChatSaved] = useState(false); // 新增：顯示對話已保存提示
-  
+
   // 新增：即時更新函數（用於新對話）
   const immediateUpdateHistories = async (userId: string) => {
     if (isUpdatingHistories) return;
@@ -308,10 +307,6 @@ type ChatHistory = {
               if (!existingChat) {
                 setActiveChatId(newChatId);
 
-                // 顯示保存提示
-                setNewChatSaved(true);
-                setTimeout(() => setNewChatSaved(false), 3000);
-
                 // 立即更新側邊欄（先顯示 "新對話"）
                 await immediateUpdateHistories(user.id);
 
@@ -440,7 +435,6 @@ type ChatHistory = {
           handleSend={handleSend}
           handleImageChange={handleImageChange}
           image={image}
-          newChatSaved={newChatSaved}
         />
       </div>
     </div>

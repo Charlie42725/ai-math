@@ -89,7 +89,6 @@ interface ChatMainProps {
   handleSend: (e: FormEvent<HTMLFormElement>) => void;
   handleImageChange: (e: ChangeEvent<HTMLInputElement>) => void;
   image: string | null;
-  newChatSaved?: boolean; // 新增：顯示對話保存提示
 }
 
 const ChatMain: React.FC<ChatMainProps> = ({
@@ -101,8 +100,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
   inputRef,
   handleSend,
   handleImageChange,
-  image,
-  newChatSaved = false
+  image
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -130,19 +128,6 @@ const ChatMain: React.FC<ChatMainProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full min-h-0">
-      {/* 對話保存提示 */}
-      {newChatSaved && (
-        <div className="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-          <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-            <span className="text-white text-sm">✓</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-green-700 text-sm font-medium">對話已保存</p>
-            <p className="text-green-600 text-xs">繼續聊天，稍後會出現在左側歷史中</p>
-          </div>
-        </div>
-      )}
-      
       {/* 訊息顯示區 - 固定高度，可滾動 */}
       <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 custom-scrollbar">
         {messages.length === 0 ? (
