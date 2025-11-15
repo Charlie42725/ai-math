@@ -279,17 +279,6 @@ const ChatMain: React.FC<ChatMainProps> = ({
 
           {/* 輸入框區域 */}
           <div className="flex gap-2 md:gap-3 items-end">
-            {/* 圖片上傳按鈕 */}
-            <label className="p-2 md:p-3 rounded-xl bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors border border-slate-200 flex-shrink-0">
-              <span className="text-base md:text-lg">📎</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
-
             {/* 文字輸入框 */}
             <div className="flex-1 relative">
               <textarea
@@ -297,7 +286,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="輸入你的數學問題"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
+                className="w-full px-4 py-3 pl-12 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
                           focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
                           border border-slate-200 hover:border-slate-300 resize-none
                           min-h-[48px] max-h-[200px] overflow-y-auto custom-input-scrollbar"
@@ -322,6 +311,19 @@ const ChatMain: React.FC<ChatMainProps> = ({
                   }
                 }}
               />
+              
+              {/* 圖片上傳按鈕 - 左下角 */}
+              <label className="absolute left-2 bottom-2 p-2 rounded-lg bg-white hover:bg-slate-100 cursor-pointer transition-colors border border-slate-200 flex-shrink-0">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
             </div>
 
             {/* 送出按鈕 */}
