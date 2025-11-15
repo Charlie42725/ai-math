@@ -116,21 +116,7 @@ export default function Section() {
           </Link>
         </div>
 
-        {/* 底部特色標籤 - 手機優化 */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 mt-8 md:mt-12 px-2">
-          <div className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-purple-700 shadow">
-            ✨ AI 智能輔導
-          </div>
-          <div className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-pink-700 shadow">
-            🎯 個人化學習
-          </div>
-          <div className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-blue-700 shadow">
-            📈 進度追蹤
-          </div>
-          <div className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-green-700 shadow">
-            🎮 趣味互動
-          </div>
-        </div>
+
       </div>
 
       {/* 自定義動畫樣式 */}
