@@ -278,7 +278,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
           )}
 
           {/* 輸入框區域 */}
-          <div className="flex gap-2 md:gap-3 items-center">
+          <div className="flex gap-2 md:gap-3 items-start">
             {/* 文字輸入框 */}
             <div className="flex-1 relative">
               <textarea
@@ -313,7 +313,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
               />
               
               {/* 圖片上傳按鈕 - 左側 */}
-              <label className="absolute left-2 top-2 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors z-10">
+              <label className="absolute left-3 top-[9px] p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors z-10">
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
@@ -328,7 +328,7 @@ const ChatMain: React.FC<ChatMainProps> = ({
               {/* 麥克風按鈕 - 右側 */}
               <button
                 type="button"
-                className="absolute right-2 top-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors z-10"
+                className="absolute right-3 top-[9px] p-1.5 rounded-lg hover:bg-slate-100 transition-colors z-10"
                 onClick={() => {
                   // TODO: 實作語音輸入功能
                   alert('語音輸入功能開發中...');
