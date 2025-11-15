@@ -239,8 +239,8 @@ type ChatHistory = {
     try {
       let reply = "";
       if (image) {
-        // 圖片與 prompt 一起送到 vision API
-        const res = await fetch("/api/gemini", {
+        // 圖片自動使用 ChatGPT Vision API
+        const res = await fetch('/api/chatgpt', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ base64Image: image.split(",")[1], prompt: input }),
@@ -248,7 +248,7 @@ type ChatHistory = {
         const data = await res.json();
         reply = data.result;
       } else {
-        // 使用 askMathAI 獲取回應，包含系統提示詞
+        // 文字使用 Gemini（默認）
         reply = await askMathAI(messages, input);
       }
       const allMessages: Message[] = [
