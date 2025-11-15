@@ -1,4 +1,5 @@
 import React, { RefObject, FormEvent, ChangeEvent, useEffect, useRef } from "react";
+import Image from "next/image";
 
 // 工具函式：解析題目圖片 markdown 和文字格式
 function renderWithImage(text: string) {
@@ -89,6 +90,7 @@ interface ChatMainProps {
   handleSend: (e: FormEvent<HTMLFormElement>) => void;
   handleImageChange: (e: ChangeEvent<HTMLInputElement>) => void;
   image: string | null;
+  theme: 'minimal' | 'gradient';
 }
 
 const ChatMain: React.FC<ChatMainProps> = ({
@@ -100,7 +102,8 @@ const ChatMain: React.FC<ChatMainProps> = ({
   inputRef,
   handleSend,
   handleImageChange,
-  image
+  image,
+  theme
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -133,12 +136,30 @@ const ChatMain: React.FC<ChatMainProps> = ({
         {messages.length === 0 ? (
           /* 歡迎畫面 */
           <div className="flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8 px-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-slate-200 flex items-center justify-center shadow-sm">
-              <span className="text-3xl md:text-4xl">🧮</span>
+            {/* 主角圖片 */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-gradient-to-br from-purple-200 to-pink-200 p-2 shadow-2xl">
+                <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                  <Image
+                    src="/bs/cute.png"
+                    alt="AI 數學助手"
+                    width={160}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    priority
+                  />
+                </div>
+              </div>
             </div>
+
             <div>
-              <h1 className="text-2xl md:text-4xl font-bold text-gray-700 mb-3 md:mb-4">
-                AI Math Assistant
+              <h1 className={`text-2xl md:text-4xl font-bold mb-3 md:mb-4 ${
+                theme === 'gradient'
+                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent'
+                  : 'text-gray-700'
+              }`}>
+                AI 數學小助手
               </h1>
               <p className="text-gray-500 text-base md:text-lg mb-6 md:mb-8 max-w-md px-4">
                 你的專屬數學學習夥伴，準備好開始探索數學的奧秘了嗎？
@@ -176,10 +197,14 @@ const ChatMain: React.FC<ChatMainProps> = ({
                   </div>
 
                   {/* 訊息氣泡 */}
-                  <div className={`rounded-2xl px-3 md:px-4 py-2 md:py-3 shadow-sm text-sm md:text-base ${
+                  <div className={`rounded-2xl px-3 md:px-4 py-2 md:py-3 shadow-sm text-sm md:text-base transition-colors duration-300 ${
                     message.role === 'user'
-                      ? 'bg-slate-300 text-gray-800'
-                      : 'bg-white text-gray-700 border border-slate-200'
+                      ? theme === 'gradient'
+                        ? 'bg-gradient-to-r from-purple-400 to-pink-400 text-white'
+                        : 'bg-slate-300 text-gray-800'
+                      : theme === 'gradient'
+                        ? 'bg-white/90 backdrop-blur-sm text-gray-700 border border-purple-200 shadow-md'
+                        : 'bg-white text-gray-700 border border-slate-200'
                   }`}>
                     {message.parts.map((part, partIndex) => (
                       <div key={partIndex}>
@@ -231,7 +256,11 @@ const ChatMain: React.FC<ChatMainProps> = ({
       </div>
 
       {/* 底部輸入區 - 固定位置 */}
-      <div className="border-t border-slate-200 bg-white p-3 md:p-6">
+      <div className={`p-3 md:p-6 transition-all duration-300 ${
+        theme === 'gradient'
+          ? 'bg-white/80 backdrop-blur-sm border-t border-purple-200'
+          : 'bg-white border-t border-slate-200'
+      }`}>
         <form onSubmit={handleSend} className="space-y-4">
           {/* 圖片預覽 */}
           {image && (

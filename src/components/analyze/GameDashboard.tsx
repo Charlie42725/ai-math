@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { standardizeConcept } from "@/lib/conceptMapping";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 import ProgressBar from "./ProgressBar";
@@ -205,71 +206,116 @@ export default function GameDashboard({ data }: { data: any[] }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden">
       {/* 角色卡片頭部 */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6 border-b border-gray-200">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center border-2 border-blue-200 shadow-sm flex-shrink-0">
-              <span className="text-xl md:text-2xl">🎓</span>
+      <div className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 md:p-8 border-b-2 border-indigo-200 overflow-hidden">
+        {/* 裝飾性背景元素 */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-300 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-300 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* 主角圖片取代 emoji */}
+            <div className="relative flex-shrink-0 group">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white shadow-xl overflow-hidden border-4 border-white ring-4 ring-indigo-200 transition-all duration-300 group-hover:scale-110 group-hover:ring-indigo-300">
+                <Image
+                  src="/bs/cute.png"
+                  alt="Math Learning Assistant"
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                  priority
+                />
+              </div>
+              {/* 等級徽章 */}
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg border-3 border-white flex items-center justify-center transform rotate-12">
+                <span className="text-white text-sm font-black">{level}</span>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-base md:text-lg font-bold text-blue-600">等級 {level}</span>
-                <div className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+
+            <div className="flex-1">
+              <h2 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
+                {title}
+              </h2>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-bold shadow-md">
+                  等級 {level}
+                </div>
+                <div className="px-3 py-1.5 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-indigo-200 text-indigo-700 text-sm font-bold shadow-md">
                   {stabilityPercentage}% 完成度
                 </div>
               </div>
+              <div className="flex items-center gap-2 text-xs text-gray-600">
+                <span className="px-2 py-1 rounded-lg bg-white/60 border border-indigo-200 font-semibold">持續進步中</span>
+                <span className="px-2 py-1 rounded-lg bg-white/60 border border-purple-200 font-semibold">加油！</span>
+              </div>
             </div>
           </div>
-          <div className="w-full md:w-auto">
-            <div className="text-gray-700 text-sm mb-1">學習穩定度</div>
-            <div className="w-full md:w-32 h-3 rounded-full bg-gray-200 overflow-hidden">
+
+          {/* 學習穩定度指示器 */}
+          <div className="w-full md:w-48 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 border-indigo-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-700 text-sm font-bold">學習穩定度</span>
+              <span className="text-indigo-600 text-lg font-black">{stabilityPercentage}%</span>
+            </div>
+            <div className="w-full h-4 rounded-full bg-gray-200 overflow-hidden shadow-inner">
               <div
-                className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-500`}
+                className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 shadow-md`}
                 style={{ width: `${stabilityPercentage}%` }}
               ></div>
             </div>
           </div>
         </div>
 
-        {/* HP 血量條 */}
-        <div className="bg-white/80 rounded-lg p-3 md:p-4 border border-blue-100">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-gray-900 font-semibold text-sm md:text-base">💪 基礎穩定度</span>
-            <span className="text-gray-700 text-sm md:text-base">{stabilityPercentage}/100</span>
+        {/* HP 血量條 - 重新設計為更清晰的進度條 */}
+        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-5 border-2 border-indigo-200 shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">💪</span>
+              <span className="text-gray-900 font-bold text-base md:text-lg">基礎穩定度</span>
+            </div>
+            <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {stabilityPercentage}/100
+            </span>
           </div>
-          <div className="w-full h-3 md:h-4 rounded-full bg-gray-200 overflow-hidden">
+          <div className="w-full h-5 md:h-6 rounded-full bg-gray-200 overflow-hidden shadow-inner border-2 border-gray-300">
             <div
-              className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 relative`}
+              className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 relative flex items-center justify-end pr-2`}
               style={{ width: `${stabilityPercentage}%` }}
             >
-              <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+              <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+              <span className="relative text-white text-xs font-bold drop-shadow-lg">
+                {stabilityPercentage > 10 && `${stabilityPercentage}%`}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 標籤切換 */}
-      <div className="bg-gray-50 px-4 md:px-6 py-3 border-b border-gray-200 overflow-x-auto">
-        <div className="flex gap-1 min-w-max">
+      {/* 標籤切換 - 更清晰的設計 */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 md:px-6 py-4 border-b-2 border-indigo-100 overflow-x-auto">
+        <div className="flex gap-2 md:gap-3 min-w-max">
           {[
-            { id: 'overview', label: '📊 總覽', icon: '📊' },
-            { id: 'trends', label: '📈 學習趨勢', icon: '📈' },
-            { id: 'tasks', label: '✅ 升級任務', icon: '✅' },
-            { id: 'badges', label: '🏆 成就徽章', icon: '🏆' }
+            { id: 'overview', label: '總覽', icon: '📊' },
+            { id: 'trends', label: '學習趨勢', icon: '📈' },
+            { id: 'tasks', label: '升級任務', icon: '✅' },
+            { id: 'badges', label: '成就徽章', icon: '🏆' }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition-all duration-200 whitespace-nowrap ${
+              className={`group px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-bold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-105 border-2 border-white'
+                  : 'bg-white/60 text-gray-700 hover:bg-white hover:text-indigo-600 hover:scale-105 border-2 border-transparent hover:border-indigo-200 shadow-sm'
               }`}
             >
-              {tab.label}
+              <span className={`text-lg transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {tab.icon}
+              </span>
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -280,10 +326,11 @@ export default function GameDashboard({ data }: { data: any[] }) {
           <div className="space-y-6">
             {/* 學習進度條 */}
             <div>
-              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📈</span> 學習進度條
+              <h3 className="text-lg md:text-xl font-black text-gray-900 mb-4 flex items-center gap-3">
+                <span className="text-2xl">📈</span>
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">學習進度條</span>
               </h3>
-              <div className="bg-slate-50 rounded-lg p-3 md:p-4 space-y-4 border border-slate-200">
+              <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-2xl p-4 md:p-6 space-y-5 border-2 border-indigo-100 shadow-lg">
                 <ProgressBar
                   value={strongestConcepts.length}
                   max={10}
@@ -307,18 +354,22 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
             {/* 強項展示 */}
             <div>
-              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>🏆</span> 你的強項領域
+              <h3 className="text-lg md:text-xl font-black text-gray-900 mb-4 flex items-center gap-3">
+                <span className="text-2xl">🏆</span>
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">你的強項領域</span>
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                 {strongestConcepts.map(([concept, count], index) => (
-                  <div key={concept} className="bg-green-50 rounded-lg p-3 md:p-4 border border-green-200">
+                  <div
+                    key={concept}
+                    className="group relative bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-5 border-2 border-green-200 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
-                        <div className="text-green-700 font-semibold text-sm md:text-base truncate">{concept}</div>
-                        <div className="text-green-600 text-xs md:text-sm">{count} 次使用</div>
+                        <div className="text-green-800 font-bold text-base md:text-lg truncate">{concept}</div>
+                        <div className="text-green-600 text-sm md:text-base font-semibold mt-1">{count} 次使用</div>
                       </div>
-                      <div className="text-xl md:text-2xl flex-shrink-0 ml-2">
+                      <div className="text-3xl md:text-4xl flex-shrink-0 ml-3 group-hover:scale-110 transition-transform duration-300">
                         {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'}
                       </div>
                     </div>
@@ -330,18 +381,22 @@ export default function GameDashboard({ data }: { data: any[] }) {
             {/* 弱點警告 */}
             {weaknessConcepts.length > 0 && (
               <div>
-                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span>⚠️</span> 需要加強的概念
+                <h3 className="text-lg md:text-xl font-black text-gray-900 mb-4 flex items-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">需要加強的概念</span>
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                   {weaknessConcepts.map(([concept, count]) => (
-                    <div key={concept} className="bg-orange-50 rounded-lg p-3 md:p-4 border border-orange-200">
+                    <div
+                      key={concept}
+                      className="group relative bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 md:p-5 border-2 border-orange-200 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <div className="text-orange-700 font-semibold text-sm md:text-base truncate">{concept}</div>
-                          <div className="text-orange-600 text-xs md:text-sm">{count} 次錯誤</div>
+                          <div className="text-orange-800 font-bold text-base md:text-lg truncate">{concept}</div>
+                          <div className="text-orange-600 text-sm md:text-base font-semibold mt-1">{count} 次需加強</div>
                         </div>
-                        <span className="text-xl md:text-2xl flex-shrink-0 ml-2">⚠️</span>
+                        <span className="text-3xl md:text-4xl flex-shrink-0 ml-3 group-hover:scale-110 transition-transform duration-300 animate-pulse">⚠️</span>
                       </div>
                     </div>
                   ))}
@@ -352,13 +407,14 @@ export default function GameDashboard({ data }: { data: any[] }) {
         )}
 
         {activeTab === 'trends' && (
-          <div className="space-y-6">
+          <div className="space-y-6 md:space-y-8">
             {/* 概念掌握度對比 */}
             <div>
-              <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📊</span> 概念掌握度分析
+              <h3 className="text-lg md:text-xl font-black text-gray-900 mb-4 flex items-center gap-3">
+                <span className="text-2xl">📊</span>
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">概念掌握度分析</span>
               </h3>
-              <div className="bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200">
+              <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-2xl p-4 md:p-6 border-2 border-indigo-100 shadow-lg">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={barChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -393,10 +449,11 @@ export default function GameDashboard({ data }: { data: any[] }) {
             {/* 學習進度趨勢 */}
             {trendData.length > 0 && (
               <div>
-                <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span>📈</span> 近期學習趨勢
+                <h3 className="text-lg md:text-xl font-black text-gray-900 mb-4 flex items-center gap-3">
+                  <span className="text-2xl">📈</span>
+                  <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">近期學習趨勢</span>
                 </h3>
-                <div className="bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200">
+                <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-4 md:p-6 border-2 border-blue-100 shadow-lg">
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={trendData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -435,8 +492,9 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
         {activeTab === 'tasks' && (
           <div>
-            <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6 flex items-center gap-2">
-              <span>🎯</span> 今日升級任務
+            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-5 md:mb-6 flex items-center gap-3">
+              <span className="text-2xl">🎯</span>
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">今日升級任務</span>
             </h3>
             {tasks.length === 0 ? (
               <div className="text-center py-8">
@@ -478,8 +536,9 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
         {activeTab === 'badges' && (
           <div>
-            <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6 flex items-center gap-2">
-              <span>🏆</span> 成就徽章收集
+            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-5 md:mb-6 flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              <span className="bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">成就徽章收集</span>
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
               {badges.map((badge, index) => (

@@ -4,11 +4,17 @@ interface ChatTopbarProps {
   user: { id: string } | null;
   onLogout: () => void;
   onToggleSidebar?: () => void;
+  theme: 'minimal' | 'gradient';
+  onThemeChange: (theme: 'minimal' | 'gradient') => void;
 }
 
-const ChatTopbar: React.FC<ChatTopbarProps> = ({ user, onLogout, onToggleSidebar }) => {
+const ChatTopbar: React.FC<ChatTopbarProps> = ({ user, onLogout, onToggleSidebar, theme, onThemeChange }) => {
   return (
-    <div className="h-16 px-4 md:px-6 border-b border-slate-200 flex items-center justify-between bg-white">
+    <div className={`h-16 px-4 md:px-6 flex items-center justify-between transition-all duration-300 ${
+      theme === 'gradient'
+        ? 'bg-white/80 backdrop-blur-sm border-b border-purple-200'
+        : 'bg-white border-b border-slate-200'
+    }`}>
       {/* 左側：漢堡選單 + 對話資訊 */}
       <div className="flex items-center gap-2 md:gap-3">
         {/* 漢堡選單按鈕 (僅移動裝置顯示) */}
@@ -37,8 +43,36 @@ const ChatTopbar: React.FC<ChatTopbarProps> = ({ user, onLogout, onToggleSidebar
         <h2 className="sm:hidden font-semibold text-gray-700">AI 助理</h2>
       </div>
 
-      {/* 右側：用戶操作 */}
+      {/* 右側：主題切換 + 用戶操作 */}
       <div className="flex items-center gap-2 md:gap-3">
+        {/* 主題切換按鈕 */}
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 border border-slate-200">
+          <button
+            onClick={() => onThemeChange('minimal')}
+            className={`px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all duration-200 ${
+              theme === 'minimal'
+                ? 'bg-white text-gray-800 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="簡約風格"
+          >
+            <span className="hidden sm:inline">簡約</span>
+            <span className="sm:hidden">🎨</span>
+          </button>
+          <button
+            onClick={() => onThemeChange('gradient')}
+            className={`px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all duration-200 ${
+              theme === 'gradient'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="漸層風格"
+          >
+            <span className="hidden sm:inline">漸層</span>
+            <span className="sm:hidden">✨</span>
+          </button>
+        </div>
+
         {user ? (
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">

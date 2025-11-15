@@ -50,6 +50,8 @@ type ChatHistory = {
   const [renameValue, setRenameValue] = useState("");
   // 追蹤目前對話視窗的 chat id
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  // 主題狀態：'minimal' 或 'gradient'
+  const [theme, setTheme] = useState<'minimal' | 'gradient'>('minimal');
   
   // 新增：防止重複創建對話的狀態
   const [isSavingChat, setIsSavingChat] = useState(false);
@@ -360,14 +362,21 @@ type ChatHistory = {
   };
 
   return (
-    <div className="h-screen bg-slate-100 flex text-gray-800 overflow-hidden">
+    <div className={`h-screen flex text-gray-800 overflow-hidden transition-colors duration-300 ${
+      theme === 'gradient'
+        ? 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'
+        : 'bg-slate-100'
+    }`}>
       {/* 左欄：對話紀錄清單 */}
       <div className={`
         fixed lg:relative z-50 lg:z-auto
         w-80 lg:w-80
-        h-full bg-white border-r border-slate-200 flex flex-col
-        transition-transform duration-300 ease-in-out
+        h-full flex flex-col
+        transition-all duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${theme === 'gradient'
+          ? 'bg-white/80 backdrop-blur-sm border-r border-purple-200'
+          : 'bg-white border-r border-slate-200'}
       `}>
         <ChatSidebar
           user={user}
@@ -402,6 +411,7 @@ type ChatHistory = {
           tags={tags}
           sendMessage={sendMessage}
           onCloseSidebar={() => setSidebarOpen(false)}
+          theme={theme}
         />
       </div>
 
@@ -422,8 +432,10 @@ type ChatHistory = {
             await supabase.auth.signOut();
           }}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          theme={theme}
+          onThemeChange={(newTheme) => setTheme(newTheme)}
         />
-        
+
         {/* 對話主體 */}
         <ChatMain
           messages={messages}
@@ -435,6 +447,7 @@ type ChatHistory = {
           handleSend={handleSend}
           handleImageChange={handleImageChange}
           image={image}
+          theme={theme}
         />
       </div>
     </div>

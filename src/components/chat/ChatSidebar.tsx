@@ -28,6 +28,7 @@ interface ChatSidebarProps {
   tags: string[];
   sendMessage?: (message: string) => Promise<void>;
   onCloseSidebar?: () => void;
+  theme: 'minimal' | 'gradient';
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
@@ -170,7 +171,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               }
             }, 200);
           }}
-          className="p-3 rounded-xl bg-slate-50 border border-slate-200"
+          className={`p-3 rounded-xl border transition-all duration-200 ${
+            props.theme === 'gradient'
+              ? 'bg-purple-50/50 border-purple-200'
+              : 'bg-slate-50 border-slate-200'
+          }`}
         >
           <input
             value={props.renameValue}
@@ -182,9 +187,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
         </form>
       ) : (
         <div
-          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer
-                     transition-all duration-200 border border-transparent hover:border-slate-200
-                     group-hover:shadow-sm"
+          className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border group-hover:shadow-sm ${
+            props.theme === 'gradient'
+              ? 'bg-purple-50/50 hover:bg-purple-100/50 border-transparent hover:border-purple-200'
+              : 'bg-slate-50 hover:bg-slate-100 border-transparent hover:border-slate-200'
+          }`}
           onClick={async () => {
             // 如果在搜尋模式下，導航到對話頁面
             if (showSearchResults) {
@@ -238,9 +245,15 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
 
       {/* 選單 */}
       {props.menuOpenId === chat.id && (
-        <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-10 overflow-hidden">
+        <div className={`absolute right-0 top-full mt-1 rounded-lg shadow-lg border z-10 overflow-hidden ${
+          props.theme === 'gradient'
+            ? 'bg-white/95 backdrop-blur-sm border-purple-200'
+            : 'bg-white border-slate-200'
+        }`}>
           <button
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-slate-50 transition-colors"
+            className={`w-full px-4 py-2 text-left text-sm text-gray-700 transition-colors ${
+              props.theme === 'gradient' ? 'hover:bg-purple-50' : 'hover:bg-slate-50'
+            }`}
             onClick={() => {
               props.setRenameValue(chat.title);
               props.setRenameId(chat.id);
@@ -292,12 +305,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   return (
     <div className="h-full flex flex-col">
       {/* 標題區 */}
-      <div className="p-6 border-b border-slate-200">
+      <div className={`p-6 border-b transition-all duration-300 ${
+        props.theme === 'gradient'
+          ? 'border-purple-200 bg-gradient-to-br from-purple-50/50 to-pink-50/50'
+          : 'border-slate-200'
+      }`}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shadow-sm">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
+            props.theme === 'gradient'
+              ? 'bg-gradient-to-br from-purple-400 to-pink-400'
+              : 'bg-slate-100'
+          }`}>
             <span className="text-xl">💬</span>
           </div>
-          <span className="text-xl font-bold text-gray-700">
+          <span className={`text-xl font-bold ${
+            props.theme === 'gradient'
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'
+              : 'text-gray-700'
+          }`}>
             歷史紀錄
           </span>
         </div>
@@ -305,9 +330,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
         {/* 搜尋框 */}
         <div className="relative">
           <input
-            className="w-full px-4 py-2.5 pr-10 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
-                       border border-slate-200 hover:border-slate-300"
+            className={`w-full px-4 py-2.5 pr-10 rounded-xl text-gray-800 placeholder:text-gray-400
+                       focus:outline-none focus:ring-2 transition-all duration-200 border ${
+              props.theme === 'gradient'
+                ? 'bg-white/80 backdrop-blur-sm border-purple-200 hover:border-purple-300 focus:ring-purple-300'
+                : 'bg-slate-50 border-slate-200 hover:border-slate-300 focus:ring-slate-300'
+            }`}
             placeholder="搜尋對話紀錄..."
             value={searchQuery}
             onChange={handleSearchChange}
@@ -343,9 +371,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
           </div>
           {props.user && !showSearchResults && (
             <button
-              className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium
+              className={`px-3 py-1.5 rounded-lg text-white text-sm font-medium
                          transition-all duration-200 shadow-sm hover:shadow-md
-                         disabled:opacity-50 disabled:cursor-not-allowed"
+                         disabled:opacity-50 disabled:cursor-not-allowed ${
+                props.theme === 'gradient'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+                  : 'bg-slate-700 hover:bg-slate-800'
+              }`}
               disabled={isCreatingNewChat || props.loading}
               onClick={async () => {
                 if (props.user && !props.loading && !isCreatingNewChat) {
@@ -424,19 +456,27 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
       </div>
 
       {/* 底部工具列 */}
-      <div className="p-4 border-t border-slate-200 space-y-2">
+      <div className={`p-4 border-t space-y-2 transition-all duration-300 ${
+        props.theme === 'gradient'
+          ? 'border-purple-200 bg-gradient-to-br from-purple-50/30 to-pink-50/30'
+          : 'border-slate-200'
+      }`}>
         <button
-          className="w-full py-2.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-700
-                     text-sm md:text-base font-medium transition-all duration-200 border border-green-200
-                     hover:border-green-300"
+          className={`w-full py-2.5 rounded-xl text-sm md:text-base font-medium transition-all duration-200 border ${
+            props.theme === 'gradient'
+              ? 'bg-green-50/80 hover:bg-green-100/80 text-green-700 border-green-200 hover:border-green-300 backdrop-blur-sm'
+              : 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200 hover:border-green-300'
+          }`}
           onClick={() => router.push('/test')}
         >
           會考模擬題
         </button>
         <button
-          className="w-full py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700
-                     text-sm md:text-base font-medium transition-all duration-200 border border-violet-200
-                     hover:border-violet-300"
+          className={`w-full py-2.5 rounded-xl text-sm md:text-base font-medium transition-all duration-200 border ${
+            props.theme === 'gradient'
+              ? 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 border-purple-200 hover:border-purple-300'
+              : 'bg-violet-50 hover:bg-violet-100 text-violet-700 border-violet-200 hover:border-violet-300'
+          }`}
           onClick={() => setShowFlashCard(true)}
         >
           抽卡練習
@@ -453,9 +493,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
           />
         )}
         <button
-          className="w-full py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700
-                     text-sm md:text-base font-medium transition-all duration-200 border border-blue-200
-                     hover:border-blue-300"
+          className={`w-full py-2.5 rounded-xl text-sm md:text-base font-medium transition-all duration-200 border ${
+            props.theme === 'gradient'
+              ? 'bg-blue-50/80 hover:bg-blue-100/80 text-blue-700 border-blue-200 hover:border-blue-300 backdrop-blur-sm'
+              : 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 hover:border-blue-300'
+          }`}
           onClick={() => router.push('/analyze')}
         >
           AI分析報表

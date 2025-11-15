@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import GameDashboard from "./GameDashboard";
 
 type Analysis = {
@@ -59,49 +60,51 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
   return (
     <div className="h-full flex flex-col">
       {/* 頂部標題區 */}
-      <div className="relative overflow-hidden bg-white">
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
+        {/* 裝飾性背景 */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+        </div>
+
         {/* 內容 */}
-        <div className="relative p-4 md:p-8 border-b border-slate-200">
-          {/* 標題部分 */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 md:gap-6 mb-4 md:mb-6">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-700 flex items-center justify-center shadow-sm">
-                  <span className="text-xl md:text-2xl">📊</span>
+        <div className="relative p-4 md:p-8 border-b border-indigo-200">
+          {/* 標題和按鈕區 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4 md:gap-6">
+              {/* 主角圖片 */}
+              <div className="relative flex-shrink-0 group">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white shadow-lg overflow-hidden border-4 border-white ring-2 ring-indigo-200 transition-all duration-300 group-hover:scale-105 group-hover:ring-indigo-300">
+                  <Image
+                    src="/bs/cute.png"
+                    alt="AI Math Assistant"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
+                    priority
+                  />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 md:w-4 md:h-4 bg-green-400 rounded-full shadow-md animate-pulse"></div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 md:w-7 md:h-7 bg-green-400 rounded-full shadow-lg animate-pulse border-2 border-white flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">✓</span>
+                </div>
               </div>
+
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-700">
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   AI 學習分析報表
                 </h1>
-                <p className="text-gray-600 mt-1 text-xs md:text-sm hidden sm:block">
-                  深度分析您的數學學習狀況並提供個人化建議
-                </p>
               </div>
             </div>
 
-            {/* 統計卡片 */}
-            <div className="flex gap-2 md:gap-3">
-              <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-xl bg-slate-100 border border-slate-200">
-                <div className="text-xs text-gray-600 mb-0.5 md:mb-1">總分析次數</div>
-                <div className="text-base md:text-lg font-semibold text-gray-800">{data.length}</div>
-              </div>
-              <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-xl bg-green-50 border border-green-200">
-                <div className="text-xs text-green-700 mb-0.5 md:mb-1">活躍狀態</div>
-                <div className="text-base md:text-lg font-semibold text-green-600">🟢 <span className="hidden sm:inline">線上</span></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* 操作按鈕區 */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+            {/* 開始分析按鈕 */}
             <button
-              className="group w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-2xl bg-slate-700 hover:bg-slate-800
+              className="group w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-2xl
+                         bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700
                          text-white font-bold text-sm md:text-base transition-all duration-300
-                         shadow-sm hover:shadow-md
-                         transform hover:-translate-y-0.5
-                         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                         shadow-lg hover:shadow-2xl
+                         transform hover:-translate-y-1 hover:scale-105
+                         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100
+                         border-2 border-white/20 flex-shrink-0"
               onClick={handleAnalyze}
               disabled={analyzing || loading}
             >
@@ -112,28 +115,45 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 md:gap-3">
-                  <span className="text-lg md:text-xl group-hover:animate-bounce">🚀</span>
+                  <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                   <span>開始 AI 分析</span>
                 </div>
               )}
             </button>
+          </div>
+
+          {/* 統計卡片和狀態指示器 */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+            <div className="flex gap-3 md:gap-4 flex-1">
+              <div className="flex-1 sm:min-w-[140px] px-4 md:px-5 py-3 md:py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="text-xs text-indigo-700 mb-1 font-semibold uppercase tracking-wide">總分析次數</div>
+                <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">{data.length}</div>
+              </div>
+              <div className="flex-1 sm:min-w-[140px] px-4 md:px-5 py-3 md:py-4 rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="text-xs text-green-700 mb-1 font-semibold uppercase tracking-wide">活躍狀態</div>
+                <div className="text-lg md:text-xl font-bold text-green-600 flex items-center gap-2">
+                  <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+                  線上中
+                </div>
+              </div>
+            </div>
 
             {/* 狀態指示器 */}
-            <div className="flex items-center gap-4">
-              {loading && (
-                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700">
-                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  <span className="text-sm font-medium">載入分析結果中...</span>
-                </div>
-              )}
+            {loading && (
+              <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-blue-50/80 backdrop-blur-sm border-2 border-blue-200 text-blue-700 shadow-md w-full sm:w-auto">
+                <div className="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                <span className="text-sm font-semibold">載入分析結果中...</span>
+              </div>
+            )}
 
-              {error && (
-                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-700">
-                  <span className="text-lg animate-pulse">⚠️</span>
-                  <span className="text-sm font-medium">{error}</span>
-                </div>
-              )}
-            </div>
+            {error && (
+              <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-red-50/80 backdrop-blur-sm border-2 border-red-200 text-red-700 shadow-md w-full sm:w-auto">
+                <span className="text-xl">⚠️</span>
+                <span className="text-sm font-semibold">{error}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
