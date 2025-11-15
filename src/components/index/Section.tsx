@@ -30,9 +30,9 @@ export default function Section() {
                 </div>
               </div>
 
-              {/* 裝飾星星 - 手機縮小 */}
-              <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 text-2xl md:text-4xl animate-spin-slow">⭐</div>
-              <div className="absolute -bottom-1 -left-1 md:-bottom-2 md:-left-2 text-xl md:text-3xl animate-spin-slow">✨</div>
+              {/* 裝飾圖案 - 手機縮小 */}
+              <div className="absolute -top-2 -right-2 md:-top-4 md:-right-4 w-6 h-6 md:w-10 md:h-10 bg-yellow-400 rounded-full opacity-80 animate-spin-slow"></div>
+              <div className="absolute -bottom-1 -left-1 md:-bottom-2 md:-left-2 w-5 h-5 md:w-8 md:h-8 bg-pink-400 rounded-full opacity-80 animate-spin-slow"></div>
             </div>
           </div>
 
@@ -46,7 +46,7 @@ export default function Section() {
             </div>
 
             <p className="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in-delayed px-2 md:px-0">
-              🌟 你的專屬數學學習夥伴<br/>
+              你的專屬數學學習夥伴<br/>
               讓學習變得更有趣、更簡單！
             </p>
 
@@ -63,7 +63,7 @@ export default function Section() {
                 href="/test"
                 className="px-6 sm:px-8 py-3 sm:py-4 bg-white hover:bg-gray-50 text-purple-600 text-base sm:text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-purple-200"
               >
-                開始測驗
+                會考練習
               </Link>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function Section() {
           <Link href="/chat" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <span className="text-2xl sm:text-3xl">💬</span>
+                <span className="text-2xl sm:text-3xl text-white font-bold">AI</span>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">智能對話</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">問數學問題，AI 秒解答</p>
@@ -86,7 +86,9 @@ export default function Section() {
           <Link href="/test" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-pink-100 hover:border-pink-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <span className="text-2xl sm:text-3xl">📝</span>
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">練習測驗</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">豐富題庫，邊做邊學</p>
@@ -97,7 +99,9 @@ export default function Section() {
           <Link href="/analyze" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-blue-100 hover:border-blue-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <span className="text-2xl sm:text-3xl">📊</span>
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">學習分析</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">追蹤進度，見證成長</p>
@@ -108,7 +112,9 @@ export default function Section() {
           <Link href="/draw" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-yellow-100 hover:border-yellow-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <span className="text-2xl sm:text-3xl">🎁</span>
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">趣味抽獎</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">學習獎勵，試試手氣</p>
