@@ -2,6 +2,7 @@ import React, { FormEvent, ChangeEvent, useState, useEffect, useRef } from "reac
 import FlashCard from "@/components/flashcard/FlashCard";
 import { useExam } from "@/contexts/ExamContext";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useFlashCard } from "@/hooks/useFlashCard";
 import { searchChatHistories, groupChatsByDate } from "@/lib/chatHistory";
 import { useRouter } from "next/navigation";
 import { ChatHistory } from "@/types";
@@ -33,132 +34,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
   const router = useRouter();
   const { getRandomQuestion } = useExam();
 
-  // FlashCard 狀態
-  const [showFlashCard, setShowFlashCard] = useState(false);
-  const [flashCardData, setFlashCardData] = useState<{ question: string; answer: string }>({ question: '', answer: '' });
-  const [loadingFlashCard, setLoadingFlashCard] = useState(false);
-
-
-
-  // 生成簡單問題的輔助函數
-  function generateSimpleQuestion(unit?: string, keywords?: string[]): string {
-    if (unit) {
-      const unitQuestions: { [key: string]: string } = {
-        '算式運算': '負數運算的規則？',
-        '立體圖形與展開圖': '展開圖的概念？',
-        '二元一次聯立方程式': '聯立方程式怎麼解？',
-        '坐標平面': '坐標的表示方法？',
-        '一元二次方程式': '二次方程式求解？'
-      };
-      if (unitQuestions[unit]) return unitQuestions[unit];
-    }
-    
-    if (keywords && keywords.length > 0) {
-      const keyword = keywords[0];
-      if (keyword.includes('坐標')) return '坐標的概念？';
-      if (keyword.includes('方程式')) return '方程式的用途？';
-      if (keyword.includes('圖形')) return '圖形的性質？';
-      if (keyword.includes('負數')) return '負數運算規則？';
-      if (keyword.includes('展開')) return '展開圖的用途？';
-    }
-    
-    return '數學觀念練習';
-  }
-
-  async function getRandomExamQuestion() {
-    const item = getRandomQuestion();
-    if (!item) return { question: '無題目', answer: '無答案' };
-    
-    let answerText = '無答案';
-    if (item.explanation) {
-      answerText = item.explanation;
-    } else if (item.options && typeof item.options === 'object' && item.answer && item.options[item.answer as keyof typeof item.options]) {
-      answerText = item.options[item.answer as keyof typeof item.options];
-    }
-
-    try {
-      // 調用 AI 將題目轉換為觀念題
-      const response = await fetch('/api/convert-to-concept', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: item.question,
-          answer: answerText,
-          unit: item.unit,
-          keywords: item.keywords
-        })
-      });
-
-      if (response.ok) {
-        const conceptData = await response.json();
-        
-        // 使用 AI 轉換的觀念問題
-        const finalQuestion = conceptData.conceptQuestion || generateSimpleQuestion(item.unit, item.keywords);
-        const finalAnswer = conceptData.conceptAnswer || answerText;
-        
-        return {
-          question: finalQuestion,
-          answer: finalAnswer,
-        };
-      }
-    } catch (error) {
-      console.error('AI 轉換失敗，使用原題目:', error);
-    }
-
-    // 如果 AI 轉換失敗，返回原題目
-    return {
-      question: item.question,
-      answer: answerText,
-    };
-  }
-
-  useEffect(() => {
-    if (showFlashCard) {
-      const loadQuestion = async () => {
-        setLoadingFlashCard(true);
-        try {
-          const questionData = await getRandomExamQuestion();
-          setFlashCardData(questionData);
-        } catch (error) {
-          console.error('載入題目失敗:', error);
-          setFlashCardData({ question: '載入失敗', answer: '請重新嘗試' });
-        } finally {
-          setLoadingFlashCard(false);
-        }
-      };
-      loadQuestion();
-    }
-  }, [showFlashCard]);
-
-  async function handleDontUnderstand() {
-    const questionText = flashCardData.question;
-    const chatPrompt = `我不懂這個數學觀念：「${questionText}」，請詳細解釋這個概念的原理和應用方式。`;
-    
-    // 關閉閃卡
-    setShowFlashCard(false);
-    
-    // 清除當前對話，開始新對話
-    props.setActiveChatId(null);
-    props.setMessages([]);
-    
-    // 發送訊息並獲得 AI 回應
-    if (props.sendMessage) {
-      await props.sendMessage(chatPrompt);
-    }
-  }
-
-  async function handleRestart() {
-    setLoadingFlashCard(true);
-    try {
-      const questionData = await getRandomExamQuestion();
-      setFlashCardData(questionData);
-    } catch (error) {
-      console.error('重新載入題目失敗:', error);
-      setFlashCardData({ question: '載入失敗', answer: '請重新嘗試' });
-    } finally {
-      setLoadingFlashCard(false);
-    }
-  }
+  // 使用改進的 useFlashCard hook
+  const {
+    showFlashCard,
+    flashCardData,
+    loadingFlashCard,
+    setShowFlashCard,
+    handleDontUnderstand: handleFlashCardDontUnderstand,
+    handleRestart,
+  } = useFlashCard({
+    onClearChat: () => {
+      props.setActiveChatId(null);
+      props.setMessages([]);
+    },
+    sendMessage: props.sendMessage,
+  });
   
   // 搜尋狀態
   const [searchQuery, setSearchQuery] = useState("");
@@ -357,7 +247,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               props.setMenuOpenId(null);
             }}
           >
-            ✏️ 重新命名
+            重新命名
           </button>
           <button
             className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -383,7 +273,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
               props.setMenuOpenId(null);
             }}
           >
-            🗑️ 刪除
+            刪除
           </button>
         </div>
       )}
@@ -418,7 +308,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
             className="w-full px-4 py-2.5 pr-10 rounded-xl bg-slate-50 text-gray-800 placeholder:text-gray-400
                        focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all duration-200
                        border border-slate-200 hover:border-slate-300"
-            placeholder="🔍 搜尋對話紀錄..."
+            placeholder="搜尋對話紀錄..."
             value={searchQuery}
             onChange={handleSearchChange}
           />
@@ -485,7 +375,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
                 }
               }}
             >
-              {isCreatingNewChat ? "準備中..." : "✨ 新對話"}
+              {isCreatingNewChat ? "準備中..." : "新對話"}
             </button>
           )}
         </div>
@@ -541,7 +431,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
                      hover:border-green-300"
           onClick={() => router.push('/test')}
         >
-          📝 會考模擬題
+          會考模擬題
         </button>
         <button
           className="w-full py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700
@@ -549,13 +439,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
                      hover:border-violet-300"
           onClick={() => setShowFlashCard(true)}
         >
-          🎴 抽卡練習
+          抽卡練習
         </button>
         {showFlashCard && (
           <FlashCard
             question={flashCardData.question}
             answer={flashCardData.answer}
-            onDontUnderstand={handleDontUnderstand}
+            onDontUnderstand={handleFlashCardDontUnderstand}
             onClose={() => setShowFlashCard(false)}
             onRestart={handleRestart}
             loading={loadingFlashCard}
@@ -568,7 +458,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = (props) => {
                      hover:border-blue-300"
           onClick={() => router.push('/analyze')}
         >
-          📊 AI分析報表
+          AI分析報表
         </button>
       </div>
     </div>
