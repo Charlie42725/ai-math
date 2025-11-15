@@ -159,14 +159,20 @@ const ChatMain: React.FC<ChatMainProps> = ({
               >
                 <div className={`flex max-w-[90%] md:max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2 md:gap-3`}>
                   {/* 頭像 */}
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden ${
                     message.role === 'user'
                       ? 'bg-slate-300'
                       : 'bg-slate-200'
                   }`}>
-                    <span className="text-base md:text-lg">
-                      {message.role === 'user' ? '👤' : '🤖'}
-                    </span>
+                    {message.role === 'user' ? (
+                      <span className="text-base md:text-lg">👤</span>
+                    ) : (
+                      <img
+                        src="/bs/cute.png"
+                        alt="AI助理"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
 
                   {/* 訊息氣泡 */}
@@ -204,8 +210,12 @@ const ChatMain: React.FC<ChatMainProps> = ({
             {loading && (
               <div className="flex justify-start">
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shadow-sm">
-                    <span className="text-lg">🤖</span>
+                  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shadow-sm overflow-hidden">
+                    <img
+                      src="/bs/cute.png"
+                      alt="AI助理"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="bg-white rounded-2xl px-4 py-3 border border-slate-200 shadow-sm">
                     <LoadingDots />

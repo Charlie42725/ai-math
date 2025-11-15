@@ -23,8 +23,12 @@ const ChatTopbar: React.FC<ChatTopbarProps> = ({ user, onLogout, onToggleSidebar
             </svg>
           </button>
         )}
-        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm">🤖</span>
+        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <img
+            src="/bs/cute.png"
+            alt="AI助理"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="hidden sm:block">
           <h2 className="font-semibold text-gray-700">AI 數學助理</h2>
