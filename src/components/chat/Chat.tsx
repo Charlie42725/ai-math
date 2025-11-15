@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { saveChatHistory, fetchChatHistories, fetchChatHistoryById, renameChatHistory, deleteChatHistory, updateChatHistory } from "@/lib/chatHistory";
 import { deduplicateChatHistories, isDuplicateConversation, cleanupOldDuplicateRecords } from "@/lib/chatDeduplication";
+import { generateChatTitle } from "@/lib/generateTitle";
 import ChatSidebar from "./ChatSidebar";
 import ChatTopbar from "./ChatTopbar";
 import ChatMain from "./ChatMain";
@@ -269,49 +270,66 @@ type ChatHistory = {
             setPendingChatId(null);
           }
           
-          // 如果這是對話的第一次交互，更新 title
+          // 如果這是對話的第一次交互，使用 AI 生成標題
           if (allMessages.length === 2 && newParts[0]?.text) {
-            const newTitle = newParts[0].text.slice(0, 30) || "新對話";
-            await renameChatHistory(currentChatId, newTitle);
-            // 使用即時更新來快速更新側邊欄
-            setTimeout(async () => {
+            const userMessage = newParts[0].text;
+            const aiResponse = reply;
+
+            // 使用 AI 生成標題（在背景執行，不阻塞 UI）
+            generateChatTitle(userMessage, aiResponse).then(async (newTitle) => {
+              await renameChatHistory(currentChatId, newTitle);
+              // 使用即時更新來快速更新側邊欄
               await immediateUpdateHistories(user.id);
-            }, 400); // 更快的響應時間
+            }).catch((error) => {
+              console.error('生成標題失敗:', error);
+            });
           }
         } else if (!isSavingChat) {
           // 創建新對話 - 只有在沒有正在保存時才執行
           setIsSavingChat(true);
           try {
-            const newTitle = newParts[0]?.text?.slice(0, 30) || "新對話";
             const firstMessage = newParts[0]?.text || "";
-            
+            const tempTitle = "新對話"; // 使用 "新對話" 作為初始標題
+
             // 檢查是否有重複對話
-            if (checkDuplicateChat(newTitle, firstMessage)) {
+            if (checkDuplicateChat(firstMessage.slice(0, 30), firstMessage)) {
               console.log('檢測到重複對話，跳過創建');
               return;
             }
-            
-            const { data } = await saveChatHistory(user.id, allMessages);
-            
+
+            // 創建對話時使用 "新對話" 作為初始標題
+            const { data } = await saveChatHistory(user.id, allMessages, tempTitle);
+
             if (data && data[0]?.id) {
               const newChatId = data[0].id;
-              
+
               // 檢查是否已存在此對話ID
               const existingChat = chatHistories.find(chat => chat.id === newChatId);
               if (!existingChat) {
                 setActiveChatId(newChatId);
-                
+
                 // 顯示保存提示
                 setNewChatSaved(true);
                 setTimeout(() => setNewChatSaved(false), 3000);
-                
-                // 立即更新標題
-                await renameChatHistory(newChatId, newTitle);
-                
-                // 使用即時更新 - 更快響應
-                setTimeout(async () => {
-                  await immediateUpdateHistories(user.id);
-                }, 500); // 只延遲 0.5 秒
+
+                // 立即更新側邊欄（先顯示 "新對話"）
+                await immediateUpdateHistories(user.id);
+
+                // 使用 AI 生成標題（在背景執行）
+                const userMessage = newParts[0]?.text || "";
+                const aiResponse = reply;
+
+                console.log('開始生成 AI 標題...');
+                generateChatTitle(userMessage, aiResponse)
+                  .then(async (aiGeneratedTitle) => {
+                    console.log('AI 生成的標題:', aiGeneratedTitle);
+                    await renameChatHistory(newChatId, aiGeneratedTitle);
+                    // 標題更新後立即刷新側邊欄
+                    await immediateUpdateHistories(user.id);
+                  })
+                  .catch(async (error) => {
+                    console.error('生成標題失敗:', error);
+                  });
               } else {
                 // 如果已存在，使用現有的ID
                 setActiveChatId(newChatId);

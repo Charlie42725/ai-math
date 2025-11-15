@@ -36,9 +36,12 @@ export async function fetchChatHistoryById(id: string) {
   return { data, error };
 }
 
-export async function saveChatHistory(userId: string, messages: any[]): Promise<{ data: any[] | null; error: any }> {
-  // 儲存一筆新的 chat history，僅存摘要與完整訊息
-  const title = messages.find(m => m.role === "user")?.parts[0]?.text?.slice(0, 20) || "新對話";
+export async function saveChatHistory(
+  userId: string,
+  messages: any[],
+  title: string = "新對話"
+): Promise<{ data: any[] | null; error: any }> {
+  // 儲存一筆新的 chat history，使用提供的標題或默認值
   const { data, error } = await supabase
     .from("chat_histories")
     .insert([
@@ -48,7 +51,8 @@ export async function saveChatHistory(userId: string, messages: any[]): Promise<
         messages,
         created_at: new Date().toISOString(),
       },
-    ]);
+    ])
+    .select(); // 添加 select() 以返回插入的數據
   return { data, error };
 }
 
