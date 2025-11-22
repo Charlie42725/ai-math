@@ -207,94 +207,77 @@ export default function GameDashboard({ data }: { data: any[] }) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden">
-      {/* 角色卡片頭部 */}
-      <div className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 md:p-8 border-b-2 border-indigo-200 overflow-hidden">
-        {/* 裝飾性背景元素 */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-300 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-300 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
-          <div className="flex items-center gap-4 md:gap-6">
-            {/* 主角圖片取代 emoji */}
-            <div className="relative flex-shrink-0 group">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white shadow-xl overflow-hidden border-4 border-white ring-4 ring-indigo-200 transition-all duration-300 group-hover:scale-110 group-hover:ring-indigo-300">
+      {/* 簡化頭部 */}
+      <div className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between gap-4">
+          {/* 左側：頭像和標題 */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-white shadow overflow-hidden border-2 border-white">
                 <Image
                   src="/bs/cute.png"
                   alt="Math Learning Assistant"
-                  width={80}
-                  height={80}
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover"
                   priority
                 />
               </div>
-              {/* 等級徽章 */}
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg border-3 border-white flex items-center justify-center transform rotate-12">
-                <span className="text-white text-sm font-black">{level}</span>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 shadow border-2 border-white flex items-center justify-center">
+                <span className="text-white text-xs font-bold">{level}</span>
               </div>
             </div>
-
-            <div className="flex-1">
-              <h2 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
-                {title}
-              </h2>
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-bold shadow-md">
-                  等級 {level}
-                </div>
-                <div className="px-3 py-1.5 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-indigo-200 text-indigo-700 text-sm font-bold shadow-md">
-                  {stabilityPercentage}% 完成度
-                </div>
-              </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">{title}</h2>
               <div className="flex items-center gap-2 text-xs text-gray-600">
-                <span className="px-2 py-1 rounded-lg bg-white/60 border border-indigo-200 font-semibold">持續進步中</span>
-                <span className="px-2 py-1 rounded-lg bg-white/60 border border-purple-200 font-semibold">加油！</span>
+                <span className="px-2 py-0.5 rounded bg-white/60 border border-indigo-200">等級 {level}</span>
+                <span className="px-2 py-0.5 rounded bg-white/60 border border-purple-200">{stabilityPercentage}% 完成度</span>
               </div>
             </div>
           </div>
 
-          {/* 學習穩定度指示器 */}
-          <div className="w-full md:w-48 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 border-indigo-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-700 text-sm font-bold">學習穩定度</span>
-              <span className="text-indigo-600 text-lg font-black">{stabilityPercentage}%</span>
+          {/* 右側：總分析次數和活躍狀態 */}
+          <div className="flex items-center gap-3 text-xs">
+            <div className="text-center">
+              <div className="text-indigo-600 font-bold">總分析次數</div>
+              <div className="text-2xl font-black text-gray-900">{data.length}</div>
             </div>
-            <div className="w-full h-4 rounded-full bg-gray-200 overflow-hidden shadow-inner">
-              <div
-                className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 shadow-md`}
-                style={{ width: `${stabilityPercentage}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        {/* HP 血量條 - 重新設計為更清晰的進度條 */}
-        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-5 border-2 border-indigo-200 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">💪</span>
-              <span className="text-gray-900 font-bold text-base md:text-lg">基礎穩定度</span>
-            </div>
-            <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              {stabilityPercentage}/100
-            </span>
-          </div>
-          <div className="w-full h-5 md:h-6 rounded-full bg-gray-200 overflow-hidden shadow-inner border-2 border-gray-300">
-            <div
-              className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 relative flex items-center justify-end pr-2`}
-              style={{ width: `${stabilityPercentage}%` }}
-            >
-              <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-              <span className="relative text-white text-xs font-bold drop-shadow-lg">
-                {stabilityPercentage > 10 && `${stabilityPercentage}%`}
-              </span>
+            <div className="text-center">
+              <div className="text-green-600 font-bold">活躍狀態</div>
+              <div className="flex items-center justify-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="text-sm font-bold text-gray-900">線上中</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 標籤切換 - 更清晰的設計 */}
+      {/* HP 血量條 */}
+      <div className="bg-white p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">💪</span>
+            <span className="text-gray-900 font-bold text-sm">基礎穩定度</span>
+          </div>
+          <span className="text-lg font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            {stabilityPercentage}/100
+          </span>
+        </div>
+        <div className="w-full h-3 rounded-full bg-gray-200 overflow-hidden">
+          <div
+            className={`h-full bg-gradient-to-r ${getHPColor(stabilityPercentage)} transition-all duration-700 relative flex items-center justify-end pr-2`}
+            style={{ width: `${stabilityPercentage}%` }}
+          >
+            <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+            <span className="relative text-white text-xs font-bold drop-shadow-lg">
+              {stabilityPercentage > 10 && `${stabilityPercentage}%`}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 標籤切換 */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 md:px-6 py-4 border-b-2 border-indigo-100 overflow-x-auto">
         <div className="flex gap-2 md:gap-3 min-w-max">
           {[
