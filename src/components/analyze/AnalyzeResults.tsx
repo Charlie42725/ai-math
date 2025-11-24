@@ -48,10 +48,28 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
       const res = await fetch("/api/analyze-results/analyze", {
         method: "POST",
       });
+
+      // 檢查回應是否為 JSON
+      const contentType = res.headers.get("content-type");
+      console.log('回應狀態:', res.status, res.statusText);
+      console.log('回應類型:', contentType);
+
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error('非 JSON 回應:', text);
+        throw new Error(`伺服器錯誤: ${text.substring(0, 100)}`);
+      }
+
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "分析失敗");
+      console.log('分析 API 回應:', json);
+
+      if (!json.success) {
+        throw new Error(json.error || "分析失敗");
+      }
+
       await fetchAnalysis();
     } catch (e: any) {
+      console.error('分析失敗:', e);
       setError(e.message || "分析失敗");
     }
     setAnalyzing(false);

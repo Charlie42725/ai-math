@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 import {
   withErrorHandler,
   createSuccessResponse,
@@ -152,13 +153,10 @@ function extractUserMessages(conversations: any[]): UserMessage[] {
 }
 
 /**
- * 生成唯一 ID
+ * 生成唯一 UUID
  */
 function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return Math.random().toString(36).slice(2) + Date.now();
+  return randomUUID();
 }
 
 export async function POST(_req: NextRequest) {
@@ -293,12 +291,18 @@ export async function POST(_req: NextRequest) {
 
     // 5. 批次寫入結果
     if (resultsToSave.length > 0) {
+      console.log(`準備寫入 ${resultsToSave.length} 筆資料...`);
+      console.log('範例資料:', JSON.stringify(resultsToSave[0], null, 2));
+
       const { error: saveError } = await supabase
         .from('analyzed_attempts')
         .insert(resultsToSave);
 
       if (saveError) {
         console.error('[寫入失敗]', saveError);
+        console.error('錯誤代碼:', saveError.code);
+        console.error('錯誤詳情:', saveError.details);
+        console.error('錯誤提示:', saveError.hint);
         throw new APIError(
           500,
           `寫入分析結果失敗: ${saveError.message}`,
