@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { DEV_MODE, ADMIN_USER } from "@/lib/devAuth";
 import { fetchChatHistoryById } from "@/lib/chatHistory";
 import Chat from "@/components/chat/Chat";
 
 export default function ChatPage() {
   const params = useParams();
   const conversationId = params.id as string;
-  
+
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,9 +18,17 @@ export default function ChatPage() {
   useEffect(() => {
     const getUser = async () => {
       try {
+        // 開發模式：直接使用管理員帳號
+        if (DEV_MODE) {
+          setUser({ id: ADMIN_USER.id });
+          setLoading(false);
+          return;
+        }
+
+        // 正常模式：從 Supabase Auth 取得用戶
         const { data } = await supabase.auth.getUser();
         setUser(data?.user ?? null);
-        
+
         if (data?.user && conversationId) {
           // 驗證對話是否屬於該使用者
           const { data: chatData, error: chatError } = await fetchChatHistoryById(conversationId);
@@ -36,13 +45,16 @@ export default function ChatPage() {
 
     getUser();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    // 只在非開發模式下監聽 auth 變化
+    if (!DEV_MODE) {
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
 
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+      return () => {
+        listener?.subscription.unsubscribe();
+      };
+    }
   }, [conversationId]);
 
   if (loading) {

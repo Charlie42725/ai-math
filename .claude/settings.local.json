@@ -18,7 +18,11 @@
       "Bash(node test-analysis.js)",
       "Bash(node test-supabase.js:*)",
       "Bash(node test-api-endpoint.js:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(node check-users.js:*)",
+      "Bash(node test-supabase-auth.js:*)",
+      "Bash(node create-test-user.js:*)",
+      "Bash(.env.local)"
     ],
     "deny": [],
     "ask": []

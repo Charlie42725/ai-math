@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { DEV_MODE, ADMIN_USER } from "@/lib/devAuth";
 import { saveChatHistory, fetchChatHistories, fetchChatHistoryById, renameChatHistory, deleteChatHistory, updateChatHistory } from "@/lib/chatHistory";
 import { deduplicateChatHistories, isDuplicateConversation, cleanupOldDuplicateRecords } from "@/lib/chatDeduplication";
 import { generateChatTitle } from "@/lib/generateTitle";
@@ -170,16 +171,27 @@ type ChatHistory = {
   }, []);
   useEffect(() => {
     const getUser = async () => {
+      // 開發模式：直接使用管理員帳號
+      if (DEV_MODE) {
+        setUser({ id: ADMIN_USER.id });
+        return;
+      }
+
+      // 正常模式：從 Supabase Auth 取得用戶
       const { data } = await supabase.auth.getUser();
       setUser(data?.user ?? null);
     };
     getUser();
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+
+    // 只在非開發模式下監聽 auth 變化
+    if (!DEV_MODE) {
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      return () => {
+        listener?.subscription.unsubscribe();
+      };
+    }
   }, []);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { DEV_MODE, devLogin } from "@/lib/devAuth";
 import Link from "next/link";
 
 export default function Signup() {
@@ -51,7 +52,20 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // 使用 Supabase Auth 註冊
+      // 開發模式：直接註冊成功並登入
+      if (DEV_MODE) {
+        const result = await devLogin(email, password);
+        if (result.success) {
+          setSuccess("註冊成功（開發模式）！正在跳轉...");
+          localStorage.setItem('dev_user', JSON.stringify(result.user));
+          setTimeout(() => {
+            router.push("/chat");
+          }, 500);
+        }
+        return;
+      }
+
+      // 正常模式：使用 Supabase Auth 註冊
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
