@@ -22,7 +22,10 @@
       "Bash(node check-users.js:*)",
       "Bash(node test-supabase-auth.js:*)",
       "Bash(node create-test-user.js:*)",
-      "Bash(.env.local)"
+      "Bash(.env.local)",
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

@@ -86,45 +86,81 @@ export interface AnalyzeAnswerParams {
 }
 
 export function createAnalyzeAnswerPrompt(params: AnalyzeAnswerParams): string {
-  return `
-請你是一位數學老師，對學生的答題進行詳細分析：
+  const isCorrect = params.userAnswer === params.correctAnswer;
 
+  return `你是一位專業的國中數學老師，請對學生的答題進行詳細分析。
+
+**題目資訊：**
 題目：${params.question}
+
 選項：
 A: ${params.options.A}
 B: ${params.options.B}
 C: ${params.options.C}
 D: ${params.options.D}
 
+**學生作答：**
+學生的答案：${params.userAnswer}
+學生的解題過程：${params.userProcess || '學生未提供解題過程'}
+
+**正確資訊：**
 正確答案：${params.correctAnswer}
 標準解析：${params.explanation}
 
-學生的答案：${params.userAnswer}
-學生的解題過程：${params.userProcess || '未提供解題過程'}
+**答題結果：** ${isCorrect ? '✓ 答案正確' : '✗ 答案錯誤'}
 
-請提供以下分析（以 JSON 格式回答）：
+---
+
+請以 JSON 格式提供完整分析，**必須包含所有欄位且內容豐富**：
+
 {
-  "feedback": "簡短評價（如：答案正確、答案錯誤、部分正確等）",
-  "explanation": "簡短說明正確答案",
-  "detailedAnalysis": "詳細分析題目和解題方法",
-  "thinkingProcess": "評估學生的思考過程和解題邏輯",
-  "thinkingScore": 4,
-  "optimization": "給學生的改進建議",
-  "suggestions": ["學習建議1", "學習建議2"],
-  "stepByStepSolution": [
-    {"step": 1, "title": "理解題意", "content": "首先分析題目要求..."},
-    {"step": 2, "title": "選擇方法", "content": "根據題目特點選擇..."},
-    {"step": 3, "title": "計算過程", "content": "具體計算步驟..."}
+  "feedback": "${isCorrect ? '答案正確！' : '答案錯誤'}",
+  "explanation": "用1-2句話說明正確答案和原因",
+  "detailedAnalysis": "用3-5句話詳細分析這道題的解題方法、關鍵概念和常見錯誤",
+  "thinkingProcess": "${params.userProcess ? '評估學生的解題邏輯和思考方式（2-3句話）' : '學生未提供解題過程，建議學生養成寫下解題步驟的習慣'}",
+  "thinkingScore": ${params.userProcess ? '根據解題過程給予1-5分的評分' : '2'},
+  "optimization": "給學生2-3句話的具體改進建議",
+  "suggestions": [
+    "第一個學習建議（具體且可執行）",
+    "第二個學習建議（具體且可執行）",
+    "第三個學習建議（具體且可執行）"
   ],
-  "keyPoints": ["重點概念1", "重點概念2"]
+  "stepByStepSolution": [
+    {
+      "step": 1,
+      "title": "理解題意",
+      "content": "說明這道題在問什麼、給了什麼條件（2-3句話）"
+    },
+    {
+      "step": 2,
+      "title": "選擇解法",
+      "content": "說明應該用什麼方法解這道題、為什麼（2-3句話）"
+    },
+    {
+      "step": 3,
+      "title": "計算過程",
+      "content": "詳細的計算步驟和推理過程（3-4句話）"
+    },
+    {
+      "step": 4,
+      "title": "驗證答案",
+      "content": "如何確認答案是正確的（1-2句話）"
+    }
+  ],
+  "keyPoints": [
+    "這道題的第一個關鍵概念",
+    "這道題的第二個關鍵概念",
+    "這道題的第三個關鍵概念"
+  ]
 }
 
-注意：
-- feedback 欄位請保持簡潔
-- thinkingScore 為1-5分，評估學生思考過程的完整性和正確性
-- stepByStepSolution 提供步驟式解題過程
-- keyPoints 列出該題目的關鍵知識點
-`.trim();
+**重要提示：**
+1. 請確保每個欄位都有完整內容，不要留空
+2. stepByStepSolution 必須包含 3-4 個步驟
+3. keyPoints 必須包含 2-3 個關鍵概念
+4. suggestions 必須包含 3 個具體建議
+5. 所有文字內容要詳細且實用，避免空泛
+6. 回答必須是純 JSON 格式，不要有其他文字`.trim();
 }
 
 /**
