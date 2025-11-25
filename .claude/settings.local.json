@@ -25,7 +25,8 @@
       "Bash(.env.local)",
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(node test-analyze-api.js:*)"
     ],
     "deny": [],
     "ask": []
