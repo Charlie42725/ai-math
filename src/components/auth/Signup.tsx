@@ -56,10 +56,10 @@ export default function Signup() {
       if (DEV_MODE) {
         const result = await devLogin(email, password);
         if (result.success) {
-          setSuccess("註冊成功（開發模式）！正在跳轉...");
+          setSuccess("註冊成功！正在跳轉...");
           localStorage.setItem('dev_user', JSON.stringify(result.user));
           setTimeout(() => {
-            router.push("/chat");
+            router.push("/test");
           }, 500);
         }
         return;
@@ -70,7 +70,7 @@ export default function Signup() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/chat`,
+          emailRedirectTo: `${window.location.origin}/test`,
         },
       });
 
@@ -117,7 +117,7 @@ export default function Signup() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/chat`,
+          redirectTo: `${window.location.origin}/test`,
         },
       });
 

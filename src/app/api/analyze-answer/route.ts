@@ -120,6 +120,9 @@ export async function POST(request: Request) {
         { temperature: 0.7 }
       );
 
+      // 調試：打印 AI 返回的結果
+      console.log('[Analyze Answer] AI Result:', JSON.stringify(aiResult, null, 2));
+
       // 基本正確性檢查
       const isCorrect = userAnswer === question.answer;
 

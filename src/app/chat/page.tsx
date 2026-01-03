@@ -1,7 +1,12 @@
-
 import Chat from "@/components/chat/Chat";
+import NavigationBar from "@/components/test/NavigationBar";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export default function ChatPage() {
-  // Render the Chat component
-  return <Chat />;
+  return (
+    <AuthGuard>
+      <NavigationBar />
+      <Chat />
+    </AuthGuard>
+  );
 }

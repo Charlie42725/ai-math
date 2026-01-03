@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import NavigationBar from './NavigationBar';
 import ExamSettings from './ExamSettings';
 import QuestionCardSimple from './QuestionCardSimple';
 import FooterControls from './FooterControls';
@@ -37,6 +38,18 @@ interface Answer {
   isCorrect?: boolean;
   feedback?: string;
   explanation?: string;
+  // 完整的分析結果
+  detailedAnalysis?: string;
+  thinkingProcess?: string;
+  thinkingScore?: number;
+  optimization?: string;
+  suggestions?: string[];
+  stepByStepSolution?: Array<{
+    step: number;
+    title: string;
+    content: string;
+  }>;
+  keyPoints?: string[];
 }
 
 interface PracticePageProps {
@@ -49,8 +62,15 @@ interface SubmissionResult {
   explanation: string;
   detailedAnalysis?: string;
   thinkingProcess?: string;
+  thinkingScore?: number;
   optimization?: string;
   suggestions?: string[];
+  stepByStepSolution?: Array<{
+    step: number;
+    title: string;
+    content: string;
+  }>;
+  keyPoints?: string[];
 }
 
 interface ExamSettingsData {
@@ -162,20 +182,37 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     const question = selectedQuestions.find(q => q.id === questionId);
     if (!question) return;
 
+    console.log('[PracticePageMinimal] handleSubmitAnswer called');
+    console.log('[PracticePageMinimal] analysisData:', analysisData);
+
     try {
       let result: SubmissionResult;
       
       // 如果已經有分析資料，直接使用
       if (analysisData && analysisData.success) {
+        console.log('[Submit Answer] Using analysisData');
+        
+        // API 返回的數據在 data 字段中
+        const apiData = analysisData.data || analysisData;
+        
+        console.log('[Submit Answer] apiData:', apiData);
+        console.log('[Submit Answer] detailedAnalysis:', apiData.detailedAnalysis);
+        console.log('[Submit Answer] stepByStepSolution:', apiData.stepByStepSolution);
+        console.log('[Submit Answer] keyPoints:', apiData.keyPoints);
+        
         result = {
-          isCorrect: analysisData.isCorrect,
-          feedback: analysisData.feedback,
-          explanation: analysisData.explanation,
-          detailedAnalysis: analysisData.detailedAnalysis,
-          thinkingProcess: analysisData.thinkingProcess,
-          optimization: analysisData.optimization,
-          suggestions: analysisData.suggestions
+          isCorrect: apiData.isCorrect,
+          feedback: apiData.feedback,
+          explanation: apiData.explanation,
+          detailedAnalysis: apiData.detailedAnalysis,
+          thinkingProcess: apiData.thinkingProcess,
+          thinkingScore: apiData.thinkingScore,
+          optimization: apiData.optimization,
+          suggestions: apiData.suggestions,
+          stepByStepSolution: apiData.stepByStepSolution,
+          keyPoints: apiData.keyPoints
         };
+        console.log('[Submit Answer] Final Result Object:', result);
       } else {
         // 如果沒有分析資料，呼叫原本的 API 或使用基本檢查
         const isCorrect = question.type === 'multiple' ? answer === question.correctAnswer : false;
@@ -227,7 +264,15 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
         process,
         isCorrect: result.isCorrect,
         feedback: result.feedback,
-        explanation: result.explanation
+        explanation: result.explanation,
+        // 保存完整的分析結果
+        detailedAnalysis: result.detailedAnalysis,
+        thinkingProcess: result.thinkingProcess,
+        thinkingScore: result.thinkingScore,
+        optimization: result.optimization,
+        suggestions: result.suggestions,
+        stepByStepSolution: result.stepByStepSolution,
+        keyPoints: result.keyPoints
       };
 
       setAnswers(prev => {
@@ -264,11 +309,18 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
       
       if (existingAnswer) {
         setCurrentQuestionSubmitted(true);
-        // 重建分析結果
+        // 重建完整的分析結果
         setCurrentQuestionResult({
           isCorrect: existingAnswer.isCorrect || false,
           feedback: existingAnswer.feedback || '',
-          explanation: existingAnswer.explanation || ''
+          explanation: existingAnswer.explanation || '',
+          detailedAnalysis: existingAnswer.detailedAnalysis,
+          thinkingProcess: existingAnswer.thinkingProcess,
+          thinkingScore: existingAnswer.thinkingScore,
+          optimization: existingAnswer.optimization,
+          suggestions: existingAnswer.suggestions,
+          stepByStepSolution: existingAnswer.stepByStepSolution,
+          keyPoints: existingAnswer.keyPoints
         });
         setSidebarVisible(true);
       } else {
@@ -291,11 +343,18 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
       
       if (existingAnswer) {
         setCurrentQuestionSubmitted(true);
-        // 重建分析結果
+        // 重建完整的分析結果
         setCurrentQuestionResult({
           isCorrect: existingAnswer.isCorrect || false,
           feedback: existingAnswer.feedback || '',
-          explanation: existingAnswer.explanation || ''
+          explanation: existingAnswer.explanation || '',
+          detailedAnalysis: existingAnswer.detailedAnalysis,
+          thinkingProcess: existingAnswer.thinkingProcess,
+          thinkingScore: existingAnswer.thinkingScore,
+          optimization: existingAnswer.optimization,
+          suggestions: existingAnswer.suggestions,
+          stepByStepSolution: existingAnswer.stepByStepSolution,
+          keyPoints: existingAnswer.keyPoints
         });
         setSidebarVisible(true);
       } else {
@@ -325,7 +384,12 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   };
 
   if (!examStarted) {
-    return <ExamSettings onStartExam={handleStartExam} />;
+    return (
+      <>
+        <NavigationBar />
+        <ExamSettings onStartExam={handleStartExam} />
+      </>
+    );
   }
 
   if (showResults) {
@@ -340,25 +404,28 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     const maxScore = selectedQuestions.reduce((sum, q) => sum + q.points, 0);
 
     return (
-      <div className="min-h-screen bg-slate-100 text-gray-800 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4">考試結果</h1>
-            <div className="bg-white rounded-lg p-6 md:p-8 mb-6 shadow-sm border border-slate-200">
-              <div className="text-3xl md:text-4xl font-bold mb-2">{totalScore}/{maxScore}</div>
-              <div className="text-lg md:text-xl text-gray-600">
-                得分率: {((totalScore / maxScore) * 100).toFixed(1)}%
+      <>
+        <NavigationBar />
+        <div className="min-h-screen bg-stone-100 text-stone-800 p-4 md:p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold mb-4">考試結果</h1>
+              <div className="bg-white rounded-lg p-6 md:p-8 mb-6 shadow-sm border border-stone-200">
+                <div className="text-3xl md:text-4xl font-bold mb-2">{totalScore}/{maxScore}</div>
+                <div className="text-lg md:text-xl text-stone-600">
+                  得分率: {((totalScore / maxScore) * 100).toFixed(1)}%
+                </div>
               </div>
+              <button
+                onClick={handleRestart}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm"
+              >
+                重新開始
+              </button>
             </div>
-            <button
-              onClick={handleRestart}
-              className="bg-slate-700 hover:bg-slate-800 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm"
-            >
-              重新開始
-            </button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -366,30 +433,52 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const currentAnswer = answers.find(a => a.questionId === currentQuestionData?.id);
 
   return (
-    <div className="min-h-screen bg-slate-100 text-gray-800 pb-20">
-      {/* 頂部計時器和進度 */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 p-3 md:p-4 z-10 shadow-sm">
+    <>
+      {!examStarted && <NavigationBar />}
+      <div className="min-h-screen bg-stone-100 text-stone-800 pb-20">
+        {/* 頂部計時器和進度 */}
+        <div className={`sticky ${examStarted ? 'top-0' : 'top-16'} bg-stone-50/95 backdrop-blur-sm border-b border-stone-200 p-3 md:p-4 z-10 shadow-sm`}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-          <div className="text-sm text-gray-600 font-medium">
-            第 {currentQuestion + 1} 題 / 共 {selectedQuestions.length} 題
+          <div className="flex items-center gap-3">
+            {/* 返回按鈕 - 只在考試開始時顯示 */}
+            {examStarted && (
+              <button
+                onClick={() => {
+                  if (window.confirm('確定要退出考試嗎？未提交的答案將會遺失。')) {
+                    setExamStarted(false);
+                    setSelectedQuestions([]);
+                    setAnswers([]);
+                  }
+                }}
+                className="p-1.5 md:p-2 hover:bg-stone-200 rounded-lg transition-colors text-stone-600 hover:text-stone-800"
+                title="退出考試"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            <div className="text-sm text-stone-600 font-medium">
+              第 {currentQuestion + 1} 題 / 共 {selectedQuestions.length} 題
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-4 w-full sm:w-auto justify-between sm:justify-start">
-            {/* AI 分析結果按鈕 */}
+            {/* 分析結果按鈕 */}
             {currentQuestionResult && (
               <button
                 onClick={() => setSidebarVisible(!sidebarVisible)}
                 className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 flex items-center space-x-1 md:space-x-2 shadow-sm ${
                   sidebarVisible
-                    ? 'bg-slate-700 text-white shadow-slate-300'
-                    : 'bg-slate-100 text-gray-700 hover:bg-slate-200 border border-slate-200 hover:border-slate-300'
+                    ? 'bg-amber-600 text-white shadow-amber-300'
+                    : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200 hover:border-stone-300'
                 }`}
               >
                 <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                <span className="hidden sm:inline">🤖 AI 分析</span>
-                <span className="sm:hidden">AI</span>
+                <span className="hidden sm:inline">📊 分析</span>
+                <span className="sm:hidden">📊</span>
                 {!sidebarVisible && (
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 )}
@@ -446,7 +535,8 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
           } : undefined}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

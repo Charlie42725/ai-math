@@ -45,44 +45,43 @@ export default function Section() {
               <div className="h-1 w-2/3 sm:w-3/4 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mx-auto md:mx-0"></div>
             </div>
 
-            <p className="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in-delayed px-2 md:px-0">
-              你的專屬數學學習夥伴<br/>
-              讓學習變得更有趣、更簡單！
+            <p className="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in-delayed px-2 md:px-0 font-semibold">
+              先做題，AI 自動告訴你哪裡不會
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start pt-2 md:pt-4 px-4 sm:px-0">
+            <div className="flex flex-col gap-3 md:gap-4 justify-center md:justify-start pt-2 md:pt-4 px-4 sm:px-0">
+              {/* 主CTA - 会考练习 */}
               <Link
-                href="/chat"
-                className="group px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-base sm:text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
+                href="/test"
+                className="group px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg sm:text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
               >
-                <span>開始學習</span>
+                <span>🔥 會考練習</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </Link>
 
-              <Link
-                href="/test"
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-white hover:bg-gray-50 text-purple-600 text-base sm:text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-purple-200"
-              >
-                會考練習
-              </Link>
+              {/* 次要入口 */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/analyze"
+                  className="px-6 sm:px-8 py-3 bg-white hover:bg-gray-50 text-blue-600 text-base sm:text-lg font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-blue-200 hover:border-blue-300 text-center"
+                >
+                  📊 學習分析
+                </Link>
+
+                <Link
+                  href="/chat"
+                  className="px-6 sm:px-8 py-3 bg-white hover:bg-gray-50 text-purple-600 text-base sm:text-lg font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-purple-200 hover:border-purple-300 text-center"
+                >
+                  💬 AI 對話
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
         {/* 功能卡片區 - 手機優化間距 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mt-10 md:mt-16 px-2 sm:px-0">
-          {/* 智能對話卡片 */}
-          <Link href="/chat" className="group">
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <span className="text-2xl sm:text-3xl text-white font-bold">AI</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">智能對話</h3>
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">問數學問題，AI 秒解答</p>
-            </div>
-          </Link>
-
-          {/* 練習測驗卡片 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mt-10 md:mt-16 px-2 sm:px-0">
+          {/* 1. 練習測驗卡片 - 主要功能 */}
           <Link href="/test" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-pink-100 hover:border-pink-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
@@ -91,11 +90,11 @@ export default function Section() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">練習測驗</h3>
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">豐富題庫，邊做邊學</p>
+              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">會考題庫，即時 AI 分析</p>
             </div>
           </Link>
 
-          {/* 學習分析卡片 */}
+          {/* 2. 學習分析卡片 */}
           <Link href="/analyze" className="group">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-blue-100 hover:border-blue-300">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
@@ -104,20 +103,18 @@ export default function Section() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">學習分析</h3>
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">追蹤進度，見證成長</p>
+              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">找出弱點，針對練習</p>
             </div>
           </Link>
 
-          {/* 趣味抽獎卡片 */}
-          <Link href="/draw" className="group">
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-yellow-100 hover:border-yellow-300">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                </svg>
+          {/* 3. 智能對話卡片 */}
+          <Link href="/chat" className="group">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 active:scale-95 transition-all duration-300 border-2 border-purple-100 hover:border-purple-300">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl sm:text-3xl text-white font-bold">AI</span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">趣味抽獎</h3>
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">學習獎勵，試試手氣</p>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">AI 對話</h3>
+              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">問數學問題，拍照解題</p>
             </div>
           </Link>
         </div>
