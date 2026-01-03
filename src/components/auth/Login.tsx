@@ -125,6 +125,15 @@ export default function Login() {
               />
             </div>
 
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition"
+              >
+                忘記密碼？
+              </Link>
+            </div>
+
             {error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200">
                 <p className="text-sm text-red-600">{error}</p>

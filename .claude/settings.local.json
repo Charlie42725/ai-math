@@ -29,7 +29,9 @@
       "Bash(node test-analyze-api.js:*)",
       "Bash(npm view:*)",
       "Bash(npm show:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(dir /s \"C:\\\\Users\\\\linei\\\\Desktop\\\\coding\\\\AI math\\\\ai-math-platform\\\\app\" *.tsx *.ts *.jsx *.js)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
