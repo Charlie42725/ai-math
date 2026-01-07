@@ -67,6 +67,15 @@ function findQuestion(questionId: string | number): QuestionData | undefined {
 }
 
 /**
+ * 提取選項字母（支援 "C: 2/5" 或 "C" 格式）
+ */
+function extractOption(answer: string): string {
+  const trimmed = answer.trim().toUpperCase();
+  const match = trimmed.match(/^([A-D])/);
+  return match ? match[1] : trimmed;
+}
+
+/**
  * 創建答案分析的預設值
  */
 function createFallbackResult(
@@ -74,7 +83,7 @@ function createFallbackResult(
   userAnswer: string,
   userProcess: string
 ): AnalysisResult {
-  const isCorrect = userAnswer === question.answer;
+  const isCorrect = extractOption(userAnswer) === extractOption(question.answer);
 
   return {
     feedback: isCorrect ? '答案正確！' : '答案錯誤',
@@ -95,13 +104,33 @@ export async function POST(request: Request) {
     const params = await request.json();
     validateRequiredParams(params, ['questionId', 'userAnswer']);
 
-    const { questionId, userAnswer, userProcess = '' } = params;
+    const { questionId, originalId, userAnswer, userProcess = '' } = params;
 
-    // 查找題目
-    const question = findQuestion(questionId);
+    // 詳細日誌
+    console.log('[Analyze Answer] ===== 開始分析 =====');
+    console.log('[Analyze Answer] 收到 questionId:', questionId, '(類型:', typeof questionId, ')');
+    console.log('[Analyze Answer] 收到 originalId:', originalId);
+    console.log('[Analyze Answer] 用戶答案:', userAnswer);
+    console.log('[Analyze Answer] 解題過程:', userProcess ? userProcess.substring(0, 100) + '...' : '無');
+
+    // 優先使用 originalId 查找題目（更準確），否則使用 questionId
+    const searchId = originalId || questionId;
+    console.log('[Analyze Answer] 使用搜尋ID:', searchId);
+
+    const question = findQuestion(searchId);
+
+    console.log('[Analyze Answer] 查找到的題目:', question ? {
+      id: question.id,
+      question: question.question.substring(0, 50) + '...'
+    } : '未找到');
+
     if (!question) {
+      console.error('[Analyze Answer] ❌ 題目不存在！questionId:', questionId);
       throw new APIError(404, '題目不存在', ErrorCodes.NOT_FOUND);
     }
+
+    console.log('[Analyze Answer] ✓ 題目ID:', question.id);
+    console.log('[Analyze Answer] ✓ 題目內容:', question.question);
 
     // 創建預設回應（作為 AI 分析失敗時的 fallback）
     const fallbackResult = createFallbackResult(question, userAnswer, userProcess);
@@ -167,8 +196,14 @@ export async function POST(request: Request) {
       console.log('[Analyze Answer] AI Result:', JSON.stringify(aiResult, null, 2));
       console.log('[Analyze Answer] Token usage:', openaiResponse.usage);
 
-      // 基本正確性檢查
-      const isCorrect = userAnswer === question.answer;
+      // 基本正確性檢查 - 使用統一的匹配邏輯
+      const userOption = extractOption(userAnswer);
+      const correctOption = extractOption(question.answer);
+      const isCorrect = userOption === correctOption;
+
+      console.log('[Analyze Answer] 用戶答案:', userAnswer, '-> 選項:', userOption);
+      console.log('[Analyze Answer] 正確答案:', question.answer, '-> 選項:', correctOption);
+      console.log('[Analyze Answer] 是否正確:', isCorrect);
 
       // 返回詳細的分析結果
       const response: AnalyzeAnswerResponse = {

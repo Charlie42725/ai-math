@@ -259,7 +259,16 @@ ${ALLOWED_MATH_CONCEPTS.map((c) => `- ${c}`).join('\n')}
  * 快速分析版本 - 優化速度和準確性
  */
 export function createAnalyzeAnswerPromptFast(params: AnalyzeAnswerParams): string {
-  const isCorrect = params.userAnswer === params.correctAnswer;
+  // 提取選項字母進行比較（支援 "C: 2/5" 或 "C" 格式）
+  const extractOption = (answer: string): string => {
+    const trimmed = answer.trim().toUpperCase();
+    const match = trimmed.match(/^([A-D])/);
+    return match ? match[1] : trimmed;
+  };
+
+  const userOption = extractOption(params.userAnswer);
+  const correctOption = extractOption(params.correctAnswer);
+  const isCorrect = userOption === correctOption;
 
   return `你是數學老師。請仔細檢查學生的每一個計算步驟。
 

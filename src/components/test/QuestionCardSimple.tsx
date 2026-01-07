@@ -12,6 +12,7 @@ interface Question {
   correctAnswer?: string;
   points: number;
   image?: string;
+  originalId?: string; // 原始題目ID，用於精確匹配
 }
 
 interface SubmissionResult {
@@ -107,8 +108,13 @@ const QuestionCardSimple = ({
 
         setRecognizedText(recognizedContent || '識別成功');
 
-        // 自動填入解題過程（可選）
-        // setLocalProcess(prev => prev + (prev ? '\n\n' : '') + '參考圖片：' + recognizedContent);
+        // 自動填入解題過程
+        if (recognizedContent) {
+          setLocalProcess(prev => {
+            const imageContent = '【圖片解題過程】\n' + recognizedContent;
+            return prev ? prev + '\n\n' + imageContent : imageContent;
+          });
+        }
       } else {
         setRecognizedText('識別失敗：' + (data.error || '未知錯誤'));
       }
@@ -140,6 +146,7 @@ const QuestionCardSimple = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             questionId: question.id,
+            originalId: question.originalId, // 傳遞原始ID用於精確匹配
             userAnswer: localAnswer,
             userProcess: localProcess,
           }),
