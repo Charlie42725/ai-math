@@ -85,6 +85,8 @@ interface ExamSettingsData {
 }
 
 const PracticePageMinimal = ({ questions }: PracticePageProps) => {
+  const router = useRouter();
+  
   // 考試設定階段
   const [examStarted, setExamStarted] = useState(false);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
@@ -437,7 +439,6 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   }
 
   if (showResults) {
-    const router = useRouter();
     const totalScore = answers.reduce((sum, answer) => {
       if (answer.isCorrect) {
         const question = selectedQuestions.find(q => q.id === answer.questionId);
@@ -471,9 +472,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
                 {sessionId && (
                   <button
                     onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.href = `/test-history/${sessionId}`;
-                      }
+                      router.push(`/test-history/${sessionId}`);
                     }}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
