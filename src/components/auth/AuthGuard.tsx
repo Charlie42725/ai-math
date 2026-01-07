@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, clearAuthState } from '@/lib/supabase';
 import { DEV_MODE, ADMIN_USER } from "@/lib/devAuth";
 import Link from "next/link";
 
@@ -23,25 +23,53 @@ export default function AuthGuard({
 
   useEffect(() => {
     const checkAuth = async () => {
-      // 開發模式：直接使用管理員帳號
-      if (DEV_MODE) {
-        setUser({ id: ADMIN_USER.id, email: ADMIN_USER.email });
-        setLoading(false);
-        return;
-      }
+      try {
+        // 開發模式：直接使用管理員帳號
+        if (DEV_MODE) {
+          setUser({ id: ADMIN_USER.id, email: ADMIN_USER.email });
+          setLoading(false);
+          return;
+        }
 
-      // 正常模式：檢查 Supabase Auth
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user ? { id: data.user.id, email: data.user.email } : null);
-      setLoading(false);
+        // 正常模式：檢查 Supabase Auth
+        const { data, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.error('Auth error:', error);
+          // 如果是 refresh token 錯誤，清理本地存儲
+          if (error.message.includes('refresh') || error.message.includes('token')) {
+            console.log('Clearing invalid token from storage');
+            await clearAuthState();
+          }
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        setUser(data?.user ? { id: data.user.id, email: data.user.email } : null);
+        setLoading(false);
+      } catch (error) {
+        console.error('Unexpected auth error:', error);
+        setUser(null);
+        setLoading(false);
+      }
     };
 
     checkAuth();
 
     // 只在非開發模式下監聽 auth 變化
     if (!DEV_MODE) {
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed:', event);
+        
+        // 處理 token 錯誤
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.log('Token refresh failed, clearing storage');
+          await clearAuthState();
+          setUser(null);
+        } else {
+          setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+        }
       });
 
       return () => {

@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import GameDashboard from "./GameDashboard";
+import TestStatsCard from "./TestStatsCard";
+import LearningInsightsCard from "./LearningInsightsCard";
 
 type Analysis = {
   id: string;
@@ -162,7 +164,22 @@ export default function AnalyzeResults({ userId }: { userId: string }) {
 
       {/* 內容區域 */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
-        <GameDashboard data={data} />
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* 綜合學習洞察卡片 */}
+          <LearningInsightsCard userId={userId} />
+          
+          {/* 測驗統計卡片 */}
+          <TestStatsCard userId={userId} />
+          
+          {/* 聊天分析報表 */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+              <span className="text-2xl">💬</span>
+              對話學習分析
+            </h2>
+            <GameDashboard data={data} />
+          </div>
+        </div>
       </div>
     </div>
   );
