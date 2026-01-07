@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
 // ============================================
 async function recognizeWithOpenAI(base64Image: string) {
   try {
+    console.log('[Recognize Image] 开始调用 OpenAI GPT-4 Vision...');
     const response = await openai.chat.completions.create({
       model: 'gpt-4o', // GPT-4 Turbo with Vision
       messages: [
@@ -103,6 +104,8 @@ async function recognizeWithOpenAI(base64Image: string) {
 
     const content = response.choices[0]?.message?.content;
 
+    console.log('[Recognize Image] OpenAI 原始响应:', content);
+
     if (!content) {
       throw new Error('OpenAI 未返回识别结果');
     }
@@ -110,20 +113,24 @@ async function recognizeWithOpenAI(base64Image: string) {
     // 尝试解析 JSON 回应
     try {
       const parsed = JSON.parse(content);
-      return {
+      const result = {
         success: true,
         formula: parsed.formula || '',
         text: parsed.text || '',
         diagram: parsed.diagram || '',
         raw: content,
       };
+      console.log('[Recognize Image] ✓ 识别结果:', JSON.stringify(result, null, 2));
+      return result;
     } catch {
       // 如果不是 JSON，返回原始文本
-      return {
+      const result = {
         success: true,
         text: content,
         raw: content,
       };
+      console.log('[Recognize Image] ✓ 识别结果 (原始):', result);
+      return result;
     }
   } catch (error: any) {
     console.error('[OpenAI Vision] 错误:', error);

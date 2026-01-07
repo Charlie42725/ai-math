@@ -1,4 +1,5 @@
-import questionsData from '@/test/batch_01_questions.json';
+import simulatedQuestionsData from '@/test/batch_01_questions.json';
+import historicalQuestionsData from '@/lib/exam.json';
 import {
   withErrorHandler,
   createSuccessResponse,
@@ -12,6 +13,9 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+// 合併所有題庫
+const allQuestionsData = [...historicalQuestionsData, ...simulatedQuestionsData] as QuestionData[];
 
 interface QuestionData {
   id: string;
@@ -53,16 +57,32 @@ interface AnalyzeAnswerResponse extends AnalysisResult {
 }
 
 /**
- * 查找題目
+ * 查找題目 - 同時搜索歷史題庫和模擬題庫
  */
 function findQuestion(questionId: string | number): QuestionData | undefined {
+  console.log('[findQuestion] 搜索ID:', questionId, '類型:', typeof questionId);
+  console.log('[findQuestion] 題庫總數:', allQuestionsData.length);
+
   if (typeof questionId === 'number') {
     // questionId 是 FormattedQuestion 的 id（index + 1），所以要減 1 來獲取正確的 index
     const targetIndex = questionId - 1;
-    return questionsData[targetIndex];
+    console.log('[findQuestion] 使用索引:', targetIndex);
+    const question = allQuestionsData[targetIndex];
+    console.log('[findQuestion] 索引查找結果:', question ? question.id : '未找到');
+    return question;
   } else {
-    // 如果 questionId 是字串，直接比較 id
-    return questionsData.find((q: QuestionData) => q.id === questionId);
+    // 如果 questionId 是字串，精確匹配 id
+    console.log('[findQuestion] 使用字串匹配:', questionId);
+    const question = allQuestionsData.find((q: QuestionData) => q.id === questionId);
+    console.log('[findQuestion] 字串匹配結果:', question ? question.id : '未找到');
+
+    // 如果沒找到，列出前5個題目ID供調試
+    if (!question) {
+      console.log('[findQuestion] ❌ 未找到！前5個題目ID:',
+        allQuestionsData.slice(0, 5).map(q => q.id));
+    }
+
+    return question;
   }
 }
 

@@ -140,29 +140,41 @@ const QuestionCardSimple = ({
       setIsSubmitting(true); // 開始提交
       try {
         // 呼叫新的分析 API
-        console.log('[QuestionCardSimple] Calling API...');
+        console.log('[QuestionCardSimple] ===== 準備提交 =====');
+        console.log('[QuestionCardSimple] question.id:', question.id, '(類型:', typeof question.id, ')');
+        console.log('[QuestionCardSimple] question.originalId:', question.originalId, '(類型:', typeof question.originalId, ')');
+        console.log('[QuestionCardSimple] question 完整對象:', question);
+        console.log('[QuestionCardSimple] userAnswer:', localAnswer);
+        console.log('[QuestionCardSimple] userProcess長度:', localProcess?.length || 0);
+
+        const requestBody = {
+          questionId: question.id,
+          originalId: question.originalId, // 傳遞原始ID用於精確匹配
+          userAnswer: localAnswer,
+          userProcess: localProcess,
+        };
+
+        console.log('[QuestionCardSimple] 請求體:', JSON.stringify(requestBody, null, 2));
+
         const response = await fetch('/api/analyze-answer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            questionId: question.id,
-            originalId: question.originalId, // 傳遞原始ID用於精確匹配
-            userAnswer: localAnswer,
-            userProcess: localProcess,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         console.log('[QuestionCardSimple] API Response status:', response.status);
         const data = await response.json();
-        
-        console.log('[QuestionCardSimple] API Response:', data);
-        console.log('[QuestionCardSimple] detailedAnalysis:', data.detailedAnalysis);
-        
+
+        console.log('[QuestionCardSimple] API Response 完整:', JSON.stringify(data, null, 2));
+
         if (data.success) {
+          console.log('[QuestionCardSimple] ✅ 分析成功');
           // 將詳細分析結果傳遞給父元件
           onAnswerSubmit(question.id, localAnswer, localProcess, data);
         } else {
-          console.error('分析失敗:', data.error);
+          console.error('[QuestionCardSimple] ❌ 分析失敗');
+          console.error('[QuestionCardSimple] 錯誤訊息:', data.error);
+          console.error('[QuestionCardSimple] 完整回應:', data);
           // 錯誤時仍然提交基本資料
           onAnswerSubmit(question.id, localAnswer, localProcess);
         }
