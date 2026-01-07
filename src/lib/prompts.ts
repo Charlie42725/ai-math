@@ -261,44 +261,46 @@ ${ALLOWED_MATH_CONCEPTS.map((c) => `- ${c}`).join('\n')}
 export function createAnalyzeAnswerPromptFast(params: AnalyzeAnswerParams): string {
   const isCorrect = params.userAnswer === params.correctAnswer;
 
-  return `你是數學老師，分析學生答題。
+  return `你是數學老師。請仔細檢查學生的每一個計算步驟。
 
 題目：${params.question}
 選項：A:${params.options.A} B:${params.options.B} C:${params.options.C} D:${params.options.D}
 正確答案：${params.correctAnswer}
 學生答案：${params.userAnswer}
-${params.userProcess ? `學生過程：${params.userProcess}` : '無解題過程'}
+${params.userProcess ? `\n學生寫的過程：\n${params.userProcess}` : '學生沒寫過程'}
 
-【評分標準 - 非常重要】
-5分：過程正確且答案正確
-4分：過程/思路正確但答案算錯（計算失誤）
-3分：有合理思路但方法有誤
-2分：過程不完整或邏輯有問題
-1分：沒有過程或完全錯誤
+【分析步驟】
+1. 先逐步驗證學生寫的每個計算是否正確
+2. 找出第一個出錯的地方
+3. 判斷是概念錯誤還是計算粗心
 
-${isCorrect ? '' : '【必須指出】學生在哪一步出錯了！是概念錯誤還是計算失誤？'}
+【評分標準】
+5分：過程和答案都對
+4分：每步計算都對，但最後答案抄錯或算錯（粗心）
+3分：有思路但計算方法錯
+2分：過程不完整
+1分：沒過程或全錯
 
-JSON格式（所有欄位必須有內容）：
+JSON格式：
 {
   "feedback": "${isCorrect ? '答案正確！' : '答案錯誤'}",
-  "explanation": "${isCorrect ? '說明為何正確' : '指出錯在哪裡（哪一步？）'}",
-  "detailedAnalysis": "這題考什麼概念？${isCorrect ? '學生掌握得很好' : '學生在哪個步驟出錯？'}",
-  "thinkingProcess": "${params.userProcess ? '評估學生的解題邏輯（若方法對但答案錯，必須說明是計算失誤）' : '學生未提供解題過程'}",
-  "thinkingScore": ${params.userProcess ? '按上述標準給1-5分' : '1'},
-  "optimization": "具體的改進建議",
+  "explanation": "${isCorrect ? '解釋為何正確' : '明確指出：哪一步算錯了？錯的值是什麼？正確應該是什麼？'}",
+  "detailedAnalysis": "這題考什麼？學生${isCorrect ? '掌握得很好' : '在第幾步出錯？'}",
+  "thinkingProcess": "${params.userProcess ? '學生的思路/方法對不對？如果方法對但算錯，明確說是計算失誤' : '沒提供過程'}",
+  "thinkingScore": ${params.userProcess ? '嚴格按評分標準（方法對但算錯=4分）' : '1'},
+  "optimization": "改進建議",
   "suggestions": ["建議1", "建議2"],
   "stepByStepSolution": [
-    {"step": 1, "title": "第一步", "content": "具體做法"},
-    {"step": 2, "title": "第二步", "content": "具體做法"}
+    {"step": 1, "title": "步驟標題", "content": "做法"},
+    {"step": 2, "title": "步驟標題", "content": "做法"}
   ],
-  "keyPoints": ["關鍵概念1", "關鍵概念2"]
+  "keyPoints": ["重點1", "重點2"]
 }
 
-【強制要求】
-1. stepByStepSolution 至少2步
-2. keyPoints 至少2個
-3. 如果學生答錯，必須在explanation或detailedAnalysis中明確指出錯在哪一步
-4. 評分必須按照標準：過程對答案錯=4分`.trim();
+【重要】
+- stepByStepSolution和keyPoints必須有內容
+- 答案錯時，必須明確指出錯在第幾步、算錯了什麼
+- 如果學生方法對但算錯數字，一定要給4分，不是3分！`.trim();
 }
 
 /**
