@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { DEV_MODE, ADMIN_USER } from '@/lib/devAuth';
 import NavigationBar from './NavigationBar';
 import ExamSettings from './ExamSettings';
 import QuestionCardSimple from './QuestionCardSimple';
@@ -86,6 +89,8 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const [examStarted, setExamStarted] = useState(false);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [examSettings, setExamSettings] = useState<ExamSettingsData | null>(null);
+  const [examStartTime, setExamStartTime] = useState<number>(0);
   
   // 考試進行階段
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -93,6 +98,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // 當前問題的提交狀態
   const [currentQuestionSubmitted, setCurrentQuestionSubmitted] = useState(false);
@@ -159,6 +165,8 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
     setCurrentQuestionSubmitted(false);
     setCurrentQuestionResult(null);
     setSidebarVisible(false); // 開始考試時隱藏側邊欄
+    setExamSettings(settings || null); // 保存考试设置
+    setExamStartTime(Date.now()); // 记录开始时间
   };
 
   // 計時器
@@ -367,9 +375,44 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   };
 
   // 提交考試
-  const handleSubmitExam = () => {
+  const handleSubmitExam = async () => {
     setIsSubmitted(true);
     setShowResults(true);
+
+    // 保存測驗結果到資料庫
+    try {
+      // 獲取使用者ID
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || (DEV_MODE ? ADMIN_USER.id : null);
+
+      if (userId) {
+        const timeSpent = Math.floor((Date.now() - examStartTime) / 1000); // 實際用時（秒）
+        
+        const response = await fetch('/api/test-sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            questions: selectedQuestions,
+            answers,
+            timeSpent,
+            settings: examSettings
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          setSessionId(result.data.sessionId);
+          console.log('測驗結果已保存:', result.data);
+        } else {
+          console.error('保存測驗結果失敗:', result.error);
+        }
+      }
+    } catch (error) {
+      console.error('保存測驗結果時發生錯誤:', error);
+    }
   };
 
   // 重新開始
@@ -394,6 +437,7 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
   }
 
   if (showResults) {
+    const router = useRouter();
     const totalScore = answers.reduce((sum, answer) => {
       if (answer.isCorrect) {
         const question = selectedQuestions.find(q => q.id === answer.questionId);
@@ -417,12 +461,29 @@ const PracticePageMinimal = ({ questions }: PracticePageProps) => {
                   得分率: {((totalScore / maxScore) * 100).toFixed(1)}%
                 </div>
               </div>
-              <button
-                onClick={handleRestart}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm"
-              >
-                重新開始
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={handleRestart}
+                  className="bg-stone-600 hover:bg-stone-700 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm"
+                >
+                  重新開始
+                </button>
+                {sessionId && (
+                  <button
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/test-history/${sessionId}`;
+                      }
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    查看詳細複盤
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

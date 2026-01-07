@@ -17,6 +17,7 @@ const NavigationBar = () => {
     { name: '會考練習', href: '/test', icon: '📝' },
     { name: '對話', href: '/chat', icon: '💬' },
     { name: '報表', href: '/analyze', icon: '📊' },
+    { name: '復盤', href: '/test-history', icon: '🔍' },
   ];
 
   // 檢查用戶登入狀態
