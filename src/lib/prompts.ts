@@ -256,6 +256,52 @@ ${ALLOWED_MATH_CONCEPTS.map((c) => `- ${c}`).join('\n')}
 }
 
 /**
+ * 快速分析版本 - 優化速度和準確性
+ */
+export function createAnalyzeAnswerPromptFast(params: AnalyzeAnswerParams): string {
+  const isCorrect = params.userAnswer === params.correctAnswer;
+
+  return `你是數學老師，分析學生答題。
+
+題目：${params.question}
+選項：A:${params.options.A} B:${params.options.B} C:${params.options.C} D:${params.options.D}
+正確答案：${params.correctAnswer}
+學生答案：${params.userAnswer}
+${params.userProcess ? `學生過程：${params.userProcess}` : '無解題過程'}
+
+【評分標準 - 非常重要】
+5分：過程正確且答案正確
+4分：過程/思路正確但答案算錯（計算失誤）
+3分：有合理思路但方法有誤
+2分：過程不完整或邏輯有問題
+1分：沒有過程或完全錯誤
+
+${isCorrect ? '' : '【必須指出】學生在哪一步出錯了！是概念錯誤還是計算失誤？'}
+
+JSON格式（所有欄位必須有內容）：
+{
+  "feedback": "${isCorrect ? '答案正確！' : '答案錯誤'}",
+  "explanation": "${isCorrect ? '說明為何正確' : '指出錯在哪裡（哪一步？）'}",
+  "detailedAnalysis": "這題考什麼概念？${isCorrect ? '學生掌握得很好' : '學生在哪個步驟出錯？'}",
+  "thinkingProcess": "${params.userProcess ? '評估學生的解題邏輯（若方法對但答案錯，必須說明是計算失誤）' : '學生未提供解題過程'}",
+  "thinkingScore": ${params.userProcess ? '按上述標準給1-5分' : '1'},
+  "optimization": "具體的改進建議",
+  "suggestions": ["建議1", "建議2"],
+  "stepByStepSolution": [
+    {"step": 1, "title": "第一步", "content": "具體做法"},
+    {"step": 2, "title": "第二步", "content": "具體做法"}
+  ],
+  "keyPoints": ["關鍵概念1", "關鍵概念2"]
+}
+
+【強制要求】
+1. stepByStepSolution 至少2步
+2. keyPoints 至少2個
+3. 如果學生答錯，必須在explanation或detailedAnalysis中明確指出錯在哪一步
+4. 評分必須按照標準：過程對答案錯=4分`.trim();
+}
+
+/**
  * Prompt 模板類型
  */
 export const PromptTemplates = {
@@ -264,6 +310,7 @@ export const PromptTemplates = {
     initialResponse: MATH_TEACHER_INITIAL_RESPONSE,
   },
   analyzeAnswer: createAnalyzeAnswerPrompt,
+  analyzeAnswerFast: createAnalyzeAnswerPromptFast,
   learningAnalysis: createLearningAnalysisPrompt,
   flashcard: createFlashcardPrompt,
   conceptConversion: createConceptConversionPrompt,

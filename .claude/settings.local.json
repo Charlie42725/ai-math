@@ -31,7 +31,8 @@
       "Bash(npm show:*)",
       "Bash(npm audit:*)",
       "Bash(dir /s \"C:\\\\Users\\\\linei\\\\Desktop\\\\coding\\\\AI math\\\\ai-math-platform\\\\app\" *.tsx *.ts *.jsx *.js)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(node test-scoring-logic.js:*)"
     ],
     "deny": [],
     "ask": []

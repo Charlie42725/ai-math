@@ -6,8 +6,12 @@ import {
   ErrorCodes,
   validateRequiredParams,
 } from '@/lib/api/apiErrorHandler';
-import { askGeminiJSON } from '@/lib/api/geminiClient';
 import { PromptTemplates } from '@/lib/prompts';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 interface QuestionData {
   id: string;
@@ -103,8 +107,8 @@ export async function POST(request: Request) {
     const fallbackResult = createFallbackResult(question, userAnswer, userProcess);
 
     try {
-      // 使用統一的 Prompt 模板
-      const prompt = PromptTemplates.analyzeAnswer({
+      // 使用優化的 Prompt 模板
+      const prompt = PromptTemplates.analyzeAnswerFast({
         question: question.question,
         options: question.options,
         correctAnswer: question.answer,
@@ -113,15 +117,55 @@ export async function POST(request: Request) {
         userProcess,
       });
 
-      // 使用統一的 Gemini Client 調用 AI 分析
-      const aiResult = await askGeminiJSON<AnalysisResult>(
-        prompt,
-        fallbackResult,
-        { temperature: 0.7 }
-      );
+      console.log('[Analyze Answer] 使用 OpenAI 分析...');
+
+      // 使用 OpenAI API 進行答案分析
+      const openaiResponse = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: '你是專業數學教師。請準確分析學生答案，所有欄位都必須有內容，特別是stepByStepSolution和keyPoints不可為空。'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1200,
+        response_format: { type: 'json_object' }
+      });
+
+      const rawResponse = openaiResponse.choices[0]?.message?.content;
+
+      if (!rawResponse) {
+        throw new Error('OpenAI API 未返回回應');
+      }
+
+      // 解析 JSON 回應
+      let aiResult: AnalysisResult;
+      try {
+        const parsed = JSON.parse(rawResponse);
+        aiResult = {
+          feedback: parsed.feedback || fallbackResult.feedback,
+          explanation: parsed.explanation || fallbackResult.explanation,
+          detailedAnalysis: parsed.detailedAnalysis || fallbackResult.detailedAnalysis,
+          thinkingProcess: parsed.thinkingProcess || fallbackResult.thinkingProcess,
+          thinkingScore: parsed.thinkingScore || fallbackResult.thinkingScore,
+          optimization: parsed.optimization || fallbackResult.optimization,
+          suggestions: parsed.suggestions || fallbackResult.suggestions,
+          stepByStepSolution: parsed.stepByStepSolution || [],
+          keyPoints: parsed.keyPoints || [],
+        };
+      } catch (parseError) {
+        console.error('[Analyze Answer] JSON 解析失敗:', parseError);
+        aiResult = fallbackResult;
+      }
 
       // 調試：打印 AI 返回的結果
       console.log('[Analyze Answer] AI Result:', JSON.stringify(aiResult, null, 2));
+      console.log('[Analyze Answer] Token usage:', openaiResponse.usage);
 
       // 基本正確性檢查
       const isCorrect = userAnswer === question.answer;
