@@ -29,6 +29,7 @@ interface Question {
   unit?: string;
   keywords?: string[];
   explanation?: string;
+  image?: string;
 }
 
 interface Answer {

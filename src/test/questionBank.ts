@@ -34,6 +34,7 @@ export interface FormattedQuestion {
   unit?: string;
   keywords?: string[];
   explanation?: string;
+  image?: string;
 }
 
 /**
@@ -73,7 +74,8 @@ function formatQuestion(questionData: QuestionData, index: number): FormattedQue
     grade: questionData.grade,
     unit: questionData.unit,
     keywords: questionData.keywords,
-    explanation: questionData.explanation
+    explanation: questionData.explanation,
+    image: questionData.image
   };
 }
 

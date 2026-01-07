@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Image from 'next/image';
 
 interface Question {
@@ -17,6 +18,8 @@ interface QuestionAreaProps {
 }
 
 export default function QuestionArea({ question, questionNumber }: QuestionAreaProps) {
+  const [imageLoadError, setImageLoadError] = useState(false);
+
   return (
     <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
       {/* 題目標題 */}
@@ -51,8 +54,8 @@ export default function QuestionArea({ question, questionNumber }: QuestionAreaP
           {question.content}
         </div>
 
-        {/* 圖片（如果有） */}
-        {question.image && (
+        {/* 圖片（如果有且加載成功） */}
+        {question.image && !imageLoadError && (
           <div className="flex justify-center py-4">
             <div className="relative max-w-2xl w-full">
               <Image
@@ -62,6 +65,10 @@ export default function QuestionArea({ question, questionNumber }: QuestionAreaP
                 height={400}
                 className="rounded-lg border border-slate-600/50 shadow-lg"
                 style={{ objectFit: 'contain' }}
+                onError={() => {
+                  console.log(`圖片加載失敗: ${question.image}`);
+                  setImageLoadError(true);
+                }}
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Question {
   id: number;
@@ -10,6 +11,7 @@ interface Question {
   options?: string[];
   correctAnswer?: string;
   points: number;
+  image?: string;
 }
 
 interface SubmissionResult {
@@ -48,6 +50,7 @@ const QuestionCardSimple = ({
   const [isSubmitting, setIsSubmitting] = useState(false); // 新增：提交狀態
   const [uploadedImage, setUploadedImage] = useState<string | null>(null); // 新增：上傳的圖片
   const [recognizedText, setRecognizedText] = useState<string>(''); // 新增：識別的文字
+  const [imageLoadError, setImageLoadError] = useState(false); // 新增：圖片加載錯誤狀態
 
   // 當切換題目時，更新本地狀態
   useEffect(() => {
@@ -56,6 +59,7 @@ const QuestionCardSimple = ({
     setIsSubmitting(false); // 重置提交狀態
     setUploadedImage(null); // 重置圖片
     setRecognizedText(''); // 重置識別文字
+    setImageLoadError(false); // 重置圖片加載錯誤狀態
   }, [currentAnswer, currentProcess, question.id]); // 監聽題目 ID 變化
 
   // 處理圖片上傳
@@ -188,6 +192,26 @@ const QuestionCardSimple = ({
           <div className="text-base sm:text-lg text-stone-800 mb-4 sm:mb-6 leading-relaxed">
             {question.content}
           </div>
+
+          {/* 圖片（如果有且加載成功） */}
+          {question.image && !imageLoadError && (
+            <div className="flex justify-center py-4 mb-4 sm:mb-6">
+              <div className="relative max-w-2xl w-full">
+                <Image
+                  src={question.image}
+                  alt={`第 ${questionNumber} 題圖片`}
+                  width={600}
+                  height={400}
+                  className="rounded-lg border border-stone-300 shadow-md"
+                  style={{ objectFit: 'contain' }}
+                  onError={() => {
+                    console.log(`圖片加載失敗: ${question.image}`);
+                    setImageLoadError(true);
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* 選項或答案區域 */}
           {question.type === 'multiple' && question.options ? (
