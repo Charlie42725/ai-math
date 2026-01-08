@@ -84,42 +84,57 @@ export default function TestStatsCard({ userId }: TestStatsCardProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 總覽卡片 */}
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-lg p-6 border border-amber-100">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-            <span className="text-2xl">📊</span>
-            測驗統計
+      <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-3xl shadow-2xl p-6 md:p-8 border-4 border-amber-200 overflow-hidden">
+        {/* 裝飾性背景 */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-yellow-300/30 to-orange-400/30 rounded-full blur-3xl"></div>
+
+        <div className="relative flex items-center justify-between mb-6">
+          <h2 className="text-2xl md:text-3xl font-black text-stone-800 flex items-center gap-3">
+            <span className="text-4xl animate-bounce">📊</span>
+            <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">測驗統計</span>
           </h2>
-          <Link 
+          <Link
             href="/test-history"
-            className="text-sm text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1"
+            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center gap-2"
           >
             查看全部
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
 
         {/* 統計數據網格 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-100">
-            <div className="text-2xl font-bold text-amber-600">{stats.totalSessions}</div>
-            <div className="text-xs text-stone-600 mt-1">測驗次數</div>
+        <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 mb-8">
+          <div className="group bg-white rounded-2xl p-5 shadow-xl border-3 border-amber-200 hover:border-amber-400 hover:shadow-2xl transition-all transform hover:scale-105">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-3xl">📝</span>
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{stats.totalSessions}</div>
+            </div>
+            <div className="text-sm font-bold text-stone-600">測驗次數</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-100">
-            <div className="text-2xl font-bold text-green-600">{stats.accuracy}%</div>
-            <div className="text-xs text-stone-600 mt-1">總正確率</div>
+          <div className="group bg-white rounded-2xl p-5 shadow-xl border-3 border-green-200 hover:border-green-400 hover:shadow-2xl transition-all transform hover:scale-105">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-3xl">✅</span>
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{stats.accuracy}%</div>
+            </div>
+            <div className="text-sm font-bold text-stone-600">總正確率</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-100">
-            <div className="text-2xl font-bold text-blue-600">{stats.avgScore.toFixed(0)}</div>
-            <div className="text-xs text-stone-600 mt-1">平均分數</div>
+          <div className="group bg-white rounded-2xl p-5 shadow-xl border-3 border-blue-200 hover:border-blue-400 hover:shadow-2xl transition-all transform hover:scale-105">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-3xl">🎯</span>
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{stats.avgScore.toFixed(0)}</div>
+            </div>
+            <div className="text-sm font-bold text-stone-600">平均分數</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-100">
-            <div className="text-2xl font-bold text-purple-600">{stats.totalQuestions}</div>
-            <div className="text-xs text-stone-600 mt-1">總題數</div>
+          <div className="group bg-white rounded-2xl p-5 shadow-xl border-3 border-purple-200 hover:border-purple-400 hover:shadow-2xl transition-all transform hover:scale-105">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-3xl">📚</span>
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{stats.totalQuestions}</div>
+            </div>
+            <div className="text-sm font-bold text-stone-600">總題數</div>
           </div>
         </div>
 
