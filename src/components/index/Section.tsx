@@ -55,7 +55,7 @@ export default function Section() {
                 href="/test"
                 className="group px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg sm:text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
               >
-                <span>🔥 會考練習</span>
+                <span>會考練習</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </Link>
 
@@ -65,14 +65,14 @@ export default function Section() {
                   href="/analyze"
                   className="px-6 sm:px-8 py-3 bg-white hover:bg-gray-50 text-blue-600 text-base sm:text-lg font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-blue-200 hover:border-blue-300 text-center"
                 >
-                  📊 學習分析
+                  學習分析
                 </Link>
 
                 <Link
                   href="/chat"
                   className="px-6 sm:px-8 py-3 bg-white hover:bg-gray-50 text-purple-600 text-base sm:text-lg font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-purple-200 hover:border-purple-300 text-center"
                 >
-                  💬 AI 對話
+                  AI 對話
                 </Link>
               </div>
             </div>

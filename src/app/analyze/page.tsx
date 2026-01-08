@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { DEV_MODE, ADMIN_USER } from "@/lib/devAuth";
 import AnalyzeResults from "@/components/analyze/AnalyzeResults";
-import NavigationBar from "@/components/test/NavigationBar";
 import AuthGuard from "@/components/auth/AuthGuard";
 
 export default function AnalyzePage() {
@@ -37,8 +36,7 @@ export default function AnalyzePage() {
 
   return (
     <AuthGuard>
-      <NavigationBar />
-      <div className="h-screen bg-slate-100 text-gray-800 overflow-hidden">
+      <div className="h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30 overflow-hidden">
         {userId && <AnalyzeResults userId={userId} />}
       </div>
     </AuthGuard>
